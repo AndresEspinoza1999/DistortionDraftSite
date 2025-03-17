@@ -41,7 +41,7 @@ async function fetchPokemonData() {
             if (!(points in tierElements)) {
                 const tierDiv = document.createElement("div");
                 tierDiv.classList.add("tier", "col-12", "p-3", "shadow-sm");
-                tierDiv.innerHTML = `<h2 class='text-center'>Tier ${points} Points</h2><div class='d-flex flex-wrap justify-content-center' id='tier-${points}'></div>`;
+                tierDiv.innerHTML = `<button class='btn btn-primary w-100 mb-2' data-bs-toggle='collapse' data-bs-target='#tier-${points}'>Tier ${points} Points</button><div class='collapse show' id='tier-${points}'></div>`;
                 tiersDiv.appendChild(tierDiv);
                 tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
             }
