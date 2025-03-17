@@ -11,7 +11,7 @@ const pokemonPoints = {
     "infernape": 3, "empoleon": 3, "staraptor": 2, "bibarel": 0, "kricketune": 0,
     "luxray": 1, "roserade": 3, "rampardos": 1, "bastiodon": 1, "wormadam": 0,
     "mothim": 0, "vespiquen": 0, "pachirisu": 0, "floatzel": 1, "cherrim": 0,
-    "gastrodon": 1, "ambipom": 2, "drifblim": 1, "lopunny": 1, "mismagius": 2,
+    "gastrodon": 2, "ambipom": 2, "drifblim": 1, "lopunny": 1, "mismagius": 2,
     "honchkrow": 1, "purugly": 0, "skuntank": 2, "bronzong": 2, "chatot": 0,
     "spiritomb": 2, "lucario": 3, "hippowdon": 3, "drapion": 2, "toxicroak": 2,
     "carnivine": 0, "lumineon": 0, "abomasnow": 2, "weavile": 2, "magnezone": 2,
