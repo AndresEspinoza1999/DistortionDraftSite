@@ -21,13 +21,17 @@ const pokemonPoints = {
     "froslass": 2, "rotom": 1, "rotom-heat": 3, "rotom-wash": 3, "rotom-mow": 2, "rotom-fan": 2, "rotom-frost": 1
 };
 
+function toPascalCase(str) {
+    return str.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+}
+
 async function fetchPokemonData() {
     try {
         const response = await fetch('https://pokeapi.co/api/v2/pokedex/6');
         if (!response.ok) throw new Error("Failed to fetch Pokédex data");
         const data = await response.json();
         let pokemonEntries = data.pokemon_entries.map(entry => entry.pokemon_species.name.toLowerCase());
-        pokemonEntries.sort(); // Ensure consistent ordering before fetching
+        pokemonEntries.sort();
 
         const tiersDiv = document.getElementById("tiers");
         const tierElements = {};
@@ -44,6 +48,12 @@ async function fetchPokemonData() {
         const fetchPokemonDetails = async (url, name, points) => {
             if (name.endsWith("mega") || name.endsWith("gmax")) return;
             
+            let formattedName = toPascalCase(name);
+            let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
+            if (["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"].includes(name)) {
+                wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
+            }
+            
             const pokemonResponse = await fetch(url);
             if (!pokemonResponse.ok) return;
             const pokemonData = await pokemonResponse.json();
@@ -52,7 +62,7 @@ async function fetchPokemonData() {
 
             const pokeDiv = document.createElement('div');
             pokeDiv.classList.add('pokemon', 'card', 'p-2', 'text-center', 'shadow-sm');
-            pokeDiv.innerHTML = `<img src="${sprite}" class='card-img-top' alt="${name}"><div class='card-body'><p class='card-text'>${name} (${points} Pts)</p></div>`;
+            pokeDiv.innerHTML = `<a href="${wikiUrl}" target="_blank"><img src="${sprite}" class='card-img-top' alt="${name}"></a><div class='card-body'><p class='card-text'>${name} (${points} Pts)</p></div>`;
             tierElements[points].appendChild(pokeDiv);
         };
 
