@@ -5,9 +5,9 @@ const pokemonPoints = {
     "snorlax": 3, "noctowl": 1, "crobat": 2, "azumarill": 2, "sudowoodo": 1,
     "quagsire": 2, "espeon": 2, "umbreon": 2, "girafarig": 1, "steelix": 2,
     "scizor": 3, "heracross": 2, "octillery": 1, "houndoom": 2, "porygon2": 1,
-    "blissey": 2, "beautifly": 1, "dustox": 1, "pelipper": 2, "gardevoir": 2,
+    "blissey": 2, "beautifly": 1, "dustox": 1, "pelipper": 1, "gardevoir": 2,
     "medicham": 2, "altaria": 1, "whiscash": 1, "milotic": 2, "dusclops": 1,
-    "tropius": 1, "chimecho": 1, "absol": 1, "glalie": 1, "torterra": 1,
+    "tropius": 0, "chimecho": 0, "absol": 1, "glalie": 1, "torterra": 1,
     "infernape": 3, "empoleon": 3, "staraptor": 2, "bibarel": 1, "kricketune": 1,
     "luxray": 1, "roserade": 3, "rampardos": 1, "bastiodon": 1, "wormadam": 1,
     "mothim": 1, "vespiquen": 1, "pachirisu": 1, "floatzel": 1, "cherrim": 1,
@@ -38,11 +38,13 @@ async function fetchPokemonData() {
         const uniquePoints = [...new Set(Object.values(pokemonPoints))].sort((a, b) => b - a);
 
         for (const points of uniquePoints) {
-            const tierDiv = document.createElement("div");
-            tierDiv.classList.add("tier", "col-12", "p-3", "shadow-sm");
-            tierDiv.innerHTML = `<h2 class='text-center'>Tier ${points} Points</h2><div class='d-flex flex-wrap justify-content-center' id='tier-${points}'></div>`;
-            tiersDiv.appendChild(tierDiv);
-            tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
+            if (!(points in tierElements)) {
+                const tierDiv = document.createElement("div");
+                tierDiv.classList.add("tier", "col-12", "p-3", "shadow-sm");
+                tierDiv.innerHTML = `<h2 class='text-center'>Tier ${points} Points</h2><div class='d-flex flex-wrap justify-content-center' id='tier-${points}'></div>`;
+                tiersDiv.appendChild(tierDiv);
+                tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
+            }
         }
 
         const fetchPokemonDetails = async (url, name, points) => {
@@ -72,7 +74,7 @@ async function fetchPokemonData() {
             const speciesData = await speciesResponse.json();
             
             const points = pokemonPoints[name];
-            if (points) {
+            if (points !== undefined) {
                 await fetchPokemonDetails(`https://pokeapi.co/api/v2/pokemon/${name}`, name, points);
             }
             
