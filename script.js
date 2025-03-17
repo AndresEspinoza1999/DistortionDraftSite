@@ -1,5 +1,5 @@
 const pokemonPoints = {
-    "raichu": 1, "clefable": 3, "golduck": 1, "alakazam": 2, "machamp": 3,
+    "raichu": 1, "clefable": 3, "golduck": 1, "alakazam": 2, "machamp": 2,
     "tentacruel": 2, "golem": 1, "rapidash": 1, "gengar": 3, "seaking": 1,
     "scyther": 0, "gyarados": 3, "vaporeon": 2, "jolteon": 2, "flareon": 0,
     "snorlax": 3, "noctowl": 1, "crobat": 2, "azumarill": 2, "sudowoodo": 1,
