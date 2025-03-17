@@ -18,7 +18,7 @@ const pokemonPoints = {
     "lickilicky": 2, "rhyperior": 2, "tangrowth": 2, "electivire": 2,
     "magmortar": 2, "togekiss": 2, "yanmega": 2, "leafeon": 1, "glaceon": 1,
     "gliscor": 2, "mamoswine": 3, "gallade": 2, "probopass": 1, "dusknoir": 2,
-    "froslass": 2
+    "froslass": 2, "rotom": 1, "rotom-heat": 3, "rotom-wash": 3, "rotom-mow": 2, "rotom-fan": 2, "rotom-frost": 1
 };
 
 async function fetchPokemonData() {
@@ -40,10 +40,10 @@ async function fetchPokemonData() {
             tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
         }
 
-        const promises = pokemonEntries.map(async (name) => {
-            if (!(name in pokemonPoints)) return;
-            const points = pokemonPoints[name];
-            const pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const fetchPokemonDetails = async (url, name, points) => {
+            if (name.endsWith("mega") || name.endsWith("gmax")) return;
+            
+            const pokemonResponse = await fetch(url);
             if (!pokemonResponse.ok) return;
             const pokemonData = await pokemonResponse.json();
             const sprite = pokemonData.sprites.front_default;
@@ -53,6 +53,27 @@ async function fetchPokemonData() {
             pokeDiv.classList.add('pokemon', 'card', 'p-2', 'text-center', 'shadow-sm');
             pokeDiv.innerHTML = `<img src="${sprite}" class='card-img-top' alt="${name}"><div class='card-body'><p class='card-text'>${name} (${points} Pts)</p></div>`;
             tierElements[points].appendChild(pokeDiv);
+        };
+
+        const promises = pokemonEntries.map(async (name) => {
+            const speciesResponse = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+            if (!speciesResponse.ok) return;
+            const speciesData = await speciesResponse.json();
+            
+            const points = pokemonPoints[name];
+            if (points) {
+                await fetchPokemonDetails(`https://pokeapi.co/api/v2/pokemon/${name}`, name, points);
+            }
+            
+            if (speciesData.forms_switchable) {
+                for (let i = 1; i < speciesData.varieties.length; i++) {
+                    const variety = speciesData.varieties[i];
+                    const varietyName = variety.pokemon.name;
+                    if (varietyName.endsWith("mega") || varietyName.endsWith("gmax")) continue;
+                    const varietyPoints = pokemonPoints[varietyName] || points;
+                    await fetchPokemonDetails(variety.pokemon.url, varietyName, varietyPoints);
+                }
+            }
         });
 
         await Promise.all(promises);
