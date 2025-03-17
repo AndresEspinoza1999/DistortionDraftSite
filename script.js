@@ -5,7 +5,7 @@ const pokemonPoints = {
     "snorlax": 3, "noctowl": 1, "crobat": 2, "azumarill": 2, "sudowoodo": 1,
     "quagsire": 2, "espeon": 2, "umbreon": 2, "girafarig": 1, "steelix": 2,
     "scizor": 3, "heracross": 2, "octillery": 1, "houndoom": 2, "porygon2": 1,
-    "blissey": 2, "beautifly": 1, "dustox": 1, "pelipper": 1, "gardevoir": 2,
+    "blissey": 2, "beautifly": 1, "dustox": 1, "pelipper": 2, "gardevoir": 2,
     "medicham": 2, "altaria": 1, "whiscash": 1, "milotic": 2, "dusclops": 1,
     "tropius": 1, "chimecho": 1, "absol": 1, "glalie": 1, "torterra": 1,
     "infernape": 3, "empoleon": 3, "staraptor": 2, "bibarel": 1, "kricketune": 1,
