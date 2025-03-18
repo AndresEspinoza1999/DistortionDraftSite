@@ -1,17 +1,17 @@
 const pokemonPoints = {
-    "raichu": 1, "clefable": 3, "golduck": 1, "alakazam": 2, "machamp": 2,
+    "raichu": 1, "clefable": 3, "golduck": 1, "alakazam": 2, "machamp": 3,
     "tentacruel": 2, "golem": 1, "rapidash": 1, "gengar": 3, "seaking": 1,
     "scyther": 0, "gyarados": 3, "vaporeon": 2, "jolteon": 2, "flareon": 0,
     "snorlax": 3, "noctowl": 1, "crobat": 2, "azumarill": 2, "sudowoodo": 1,
     "quagsire": 2, "espeon": 2, "umbreon": 2, "girafarig": 0, "steelix": 2,
-    "scizor": 3, "heracross": 2, "octillery": 1, "houndoom": 2, "porygon2": 3,
+    "scizor": 3, "heracross": 2, "octillery": 1, "houndoom": 2, "porygon2": 1,
     "blissey": 2, "beautifly": 0, "dustox": 0, "pelipper": 2, "gardevoir": 2,
-    "medicham": 2, "altaria": 1, "whiscash": 1, "milotic": 3, "dusclops": 2,
+    "medicham": 2, "altaria": 1, "whiscash": 1, "milotic": 2, "dusclops": 0,
     "tropius": 0, "chimecho": 0, "absol": 1, "glalie": 1, "torterra": 1,
     "infernape": 3, "empoleon": 3, "staraptor": 2, "bibarel": 0, "kricketune": 0,
     "luxray": 1, "roserade": 3, "rampardos": 1, "bastiodon": 1, "wormadam": 0,
     "mothim": 0, "vespiquen": 0, "pachirisu": 0, "floatzel": 1, "cherrim": 0,
-    "gastrodon": 2, "ambipom": 2, "drifblim": 1, "lopunny": 1, "mismagius": 2,
+    "gastrodon": 1, "ambipom": 2, "drifblim": 1, "lopunny": 1, "mismagius": 2,
     "honchkrow": 1, "purugly": 0, "skuntank": 2, "bronzong": 2, "chatot": 0,
     "spiritomb": 2, "lucario": 3, "hippowdon": 3, "drapion": 2, "toxicroak": 2,
     "carnivine": 0, "lumineon": 0, "abomasnow": 2, "weavile": 2, "magnezone": 2,
@@ -94,4 +94,7 @@ async function fetchPokemonData() {
         console.error("Error in fetchPokemonData:", error);
     }
 }
+
+
+
 fetchPokemonData();
