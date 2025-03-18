@@ -1,61 +1,110 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const teams = {
-        "andres": document.getElementById("andres-table"),
-        "dylan": document.getElementById("dylan-table"),
-        "ethan": document.getElementById("ethan-table"),
-        "tyler": document.getElementById("tyler-table")
+    const players = ["Andres", "Dylan", "Ethan", "Tyler"];
+    const playerContainers = {
+        "Andres": document.getElementById("team-Andres"),
+        "Dylan": document.getElementById("team-Dylan"),
+        "Ethan": document.getElementById("team-Ethan"),
+        "Tyler": document.getElementById("team-Tyler")
     };
 
-    const pokemonData = {
-        "raichu": 1, "clefable": 3, "golduck": 1, "alakazam": 2, "machamp": 3,
-        "tentacruel": 2, "golem": 1, "rapidash": 1, "gengar": 3, "seaking": 1,
-        "scyther": 0, "gyarados": 3, "vaporeon": 2, "jolteon": 2, "flareon": 0,
-        "snorlax": 3, "noctowl": 1, "crobat": 2, "azumarill": 2, "sudowoodo": 1,
-        "quagsire": 2, "espeon": 2, "umbreon": 2, "girafarig": 0, "steelix": 2,
-        "scizor": 3, "heracross": 2, "octillery": 1, "houndoom": 2, "porygon2": 1,
-        "blissey": 2, "beautifly": 0, "dustox": 0, "pelipper": 2, "gardevoir": 2,
-        "medicham": 2, "altaria": 1, "whiscash": 1, "milotic": 2, "dusclops": 0,
-        "tropius": 0, "chimecho": 0, "absol": 1, "glalie": 1, "torterra": 1,
-        "infernape": 3, "empoleon": 3, "staraptor": 2, "bibarel": 0, "kricketune": 0,
-        "luxray": 1, "roserade": 3, "rampardos": 1, "bastiodon": 1, "wormadam": 0,
-        "mothim": 0, "vespiquen": 0, "pachirisu": 0, "floatzel": 1, "cherrim": 0,
-        "gastrodon": 1, "ambipom": 2, "drifblim": 1, "lopunny": 1, "mismagius": 2,
-        "honchkrow": 1, "purugly": 0, "skuntank": 2, "bronzong": 2, "chatot": 0,
-        "spiritomb": 2, "lucario": 3, "hippowdon": 3, "drapion": 2, "toxicroak": 2,
-        "carnivine": 0, "lumineon": 0, "abomasnow": 2, "weavile": 2, "magnezone": 2,
-        "lickilicky": 2, "rhyperior": 2, "tangrowth": 2, "electivire": 2,
-        "magmortar": 2, "togekiss": 2, "yanmega": 2, "leafeon": 1, "glaceon": 1,
-        "gliscor": 2, "mamoswine": 3, "gallade": 2, "probopass": 1, "dusknoir": 2,
-        "froslass": 2, "rotom": 1, "rotom-heat": 3, "rotom-wash": 3, "rotom-mow": 2, "rotom-fan": 2, "rotom-frost": 1
-    };
-
-    Object.keys(teams).forEach(player => {
-        const container = teams[player].parentElement;
-        const dropdown = document.createElement("select");
-        dropdown.innerHTML = Object.keys(pokemonData).map(pokemon => `<option value="${pokemon}">${pokemon}</option>`).join("");
+    function loadDraftedTeams() {
+        console.log("Loading drafted teams...");
+        const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+        console.debug("Drafted Pokemon from storage:", draftedPokemons);
         
-        const addButton = document.createElement("button");
-        addButton.textContent = "Add Pokémon";
-        addButton.onclick = function () {
-            const selectedPokemon = dropdown.value;
-            addPokemonToTeam(player, selectedPokemon, pokemonData[selectedPokemon]);
-        };
-
-        container.appendChild(dropdown);
-        container.appendChild(addButton);
-    });
-
-    function addPokemonToTeam(player, pokemon, points) {
-        const table = teams[player];
-        if (table.rows.length >= 7) return; // Limit to 6 Pokémon
-
-        const row = table.insertRow();
-        const spriteCell = row.insertCell(0);
-        const nameCell = row.insertCell(1);
-        const pointsCell = row.insertCell(2);
-        
-        spriteCell.innerHTML = `<img src='https://img.pokemondb.net/sprites/home/normal/${pokemon}.png' width='50'>`;
-        nameCell.textContent = pokemon;
-        pointsCell.textContent = points;
+        players.forEach(player => {
+            console.log(`Processing team for ${player}`);
+            // Clear existing content for this player's container
+            playerContainers[player].innerHTML = "";
+            
+            // Create table element for the player's team
+            const table = document.createElement("table");
+            table.classList.add("team-table");
+            
+            // Remove the original 3-column header so we can use a single header (or none)
+            // Option 1: Remove header entirely:
+            // (If desired, you could add a header that spans all columns.)
+            // const thead = document.createElement("thead");
+            // const headerRow = document.createElement("tr");
+            // const headerCell = document.createElement("th");
+            // headerCell.setAttribute("colspan", "3");
+            // headerCell.textContent = "Team";
+            // headerRow.appendChild(headerCell);
+            // thead.appendChild(headerRow);
+            // table.appendChild(thead);
+            
+            // Create table body with exactly 2 rows × 3 columns = 6 cells total
+            const tbody = document.createElement("tbody");
+            // Filter the drafted Pokémon for the current player
+            const playerDrafts = draftedPokemons.filter(entry => entry.player === player);
+            console.log(`${player} has ${playerDrafts.length} drafted Pokémon`);
+            
+            // Outer loop: 2 rows
+            for (let r = 0; r < 2; r++) {
+                const tr = document.createElement("tr");
+                // Inner loop: 3 columns per row
+                for (let c = 0; c < 3; c++) {
+                    const td = document.createElement("td");
+                    const index = r * 3 + c; // overall cell index (0 to 5)
+                    if (index < playerDrafts.length) {
+                        const entry = playerDrafts[index];
+                        console.log(`Cell [${r}, ${c}] for ${player}: Using drafted Pokémon: ${entry.pokemon}`);
+                        
+                        // Create a mini-card inside the cell showing all info
+                        const cardDiv = document.createElement("div");
+                        cardDiv.classList.add("mini-card");
+                        
+                        const img = document.createElement("img");
+                        img.src = entry.sprite;
+                        img.alt = entry.pokemon;
+                        img.classList.add("pokemon-img");
+                        
+                        const nameP = document.createElement("p");
+                        nameP.classList.add("pokemon-name");
+                        nameP.textContent = entry.pokemon.toUpperCase();
+                        
+                        const pointsP = document.createElement("p");
+                        pointsP.classList.add("pokemon-points");
+                        pointsP.textContent = `${entry.points} Pts`;
+                        
+                        cardDiv.appendChild(img);
+                        cardDiv.appendChild(nameP);
+                        cardDiv.appendChild(pointsP);
+                        td.appendChild(cardDiv);
+                    } else {
+                        console.log(`Cell [${r}, ${c}] for ${player}: Creating placeholder cell`);
+                        td.classList.add("placeholder");
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            
+            // Create table footer for budget display
+            const tfoot = document.createElement("tfoot");
+            const footerRow = document.createElement("tr");
+            const footerCell = document.createElement("td");
+            footerCell.setAttribute("colspan", "3");
+            let usedPoints = 0;
+            playerDrafts.forEach(entry => {
+                usedPoints += Number(entry.points);
+            });
+            const totalBudget = 15;
+            const remaining = totalBudget - usedPoints;
+            footerCell.textContent = `Budget: ${totalBudget} | Used: ${usedPoints} | Remaining: ${remaining}`;
+            footerRow.appendChild(footerCell);
+            tfoot.appendChild(footerRow);
+            table.appendChild(tfoot);
+            
+            console.log(`Appending table for ${player}`);
+            playerContainers[player].appendChild(table);
+        });
     }
+    
+    // Initial load of drafted teams
+    loadDraftedTeams();
+    
+    // Update teams when a new draft occurs
+    window.addEventListener("draftUpdated", loadDraftedTeams);
 });

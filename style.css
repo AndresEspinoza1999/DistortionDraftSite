@@ -1,37 +1,170 @@
- body {
-            background: url('https://media.pocketmonsters.net/pages/51/Distort.jpg') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-            font-family: 'Poppins', sans-serif;
-            text-shadow: 1px 1px 4px black;
-        }
-        .navbar {
-            background: rgba(0, 0, 0, 0.8);
-            border-bottom: 2px solid #ffd700;
-        }
-        .navbar-brand {
-            font-family: 'Press Start 2P', cursive;
-            color: #ffd700 !important;
-        }
-        .nav-link {
-            color: white !important;
-        }
-        .nav-link:hover {
-            color: #ffd700 !important;
-        }
-        h1 {
-            font-family: 'Press Start 2P', cursive;
-            color: #ffd700;
-            text-shadow: 2px 2px 6px black;
-        }
-        .pokemon { 
-            display: inline-block; 
-            margin: 10px; 
-            text-align: center;
-        }
-        
-        img { 
-            display: block; 
-            margin: auto;
-        }
-        
+/* Import Custom Font */
+@font-face {
+    font-family: 'PokemonDP';
+    src: url('pokemon-dp-pro.ttf') format('truetype');
+    font-display: swap;
+}
+
+/* Pokémon Cards */
+.pokemon-card {
+    font-family: 'PokemonDP', sans-serif;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
+    color: white;
+    max-width: 180px; /* Increased card size */
+    display: inline-block;
+    margin: 16px;
+    overflow: hidden; /* Prevents content overflow */
+}
+
+/* Pokémon Images */
+.pokemon-img {
+    width: 120px; /* Adjusted for better proportion */
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto; /* Adds space below the sprite */
+}
+
+/* Pokémon Name */
+.pokemon-name {
+    font-size: 20px; /* Increased for better readability */
+    margin: 12px 0; /* Added more margin to separate from image */
+    font-weight: bold;
+    display: block; /* Ensures it appears below the image */
+    text-transform:capitalize /* Capitalizes all letters */
+}
+
+/* Draft & PokeMMO Buttons */
+.draft-btn, .pokemmo-btn {
+    width: 100%;
+    font-size: 20px; /* Increased button text size */
+    padding: 8px 0;
+    border-radius: 6px; /* Smooth edges */
+}
+
+.draft-btn {
+    background-color: #F0D5D6 !important;
+    color: black !important;
+    border: none;
+}
+
+.draft-btn:hover {
+    background-color: #e6b7b9 !important;
+}
+
+.pokemmo-btn {
+    background-color: #B9F2FF !important;
+    color: black !important;
+    border: none;
+}
+
+.pokemmo-btn:hover {
+    background-color: #9cd3e0 !important;
+}
+
+/* Tier Container */
+.tier div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* General Body Styling */
+body {
+    background: url('https://media.pocketmonsters.net/pages/51/Distort.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 1px 1px 4px black;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid #ffd700;
+}
+
+.navbar-brand {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffd700 !important;
+}
+
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    color: #ffd700 !important;
+}
+
+/* Heading */
+h1 {
+    font-family: 'Press Start 2P', cursive;
+    color: #ffd700;
+    text-shadow: 2px 2px 6px black;
+}
+
+/* General Pokémon Display */
+.pokemon {
+    display: inline-block;
+    margin: 12px;
+    text-align: center;
+}
+
+/* Image Styling */
+img {
+    display: block;
+    margin: auto;
+    max-width: 100%; /* Prevents images from exceeding container size */
+}
+
+/* Additional styling for team preview tables */
+.team-container {
+    max-width: 1500px; /* Increased width to span more of the screen */
+    margin: 20px auto;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    color: #333;
+}
+
+.team-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: 'Press Start 2P', cursive;
+    color: #ffd700;
+    text-shadow: 2px 2px 6px black;
+}
+
+table.team-table {
+    width: 367px; /* Fixed width */
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+/* Force each header cell and data cell to have fixed dimensions */
+/* 367px / 3 columns ≈ 122.33px per column, and each row is 142.55px high */
+table.team-table th,
+table.team-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+    width: 122.33px;
+    height: 142.55px;
+}
+
+table.team-table th {
+    background-color: #f2f2f2;
+}
+
+table.team-table td.placeholder {
+    background-color: #ffe6e6;
+}
+

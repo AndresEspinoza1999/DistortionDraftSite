@@ -17,10 +17,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Draft Board</a>
+                        <a class="nav-link active" href="index.html">Draft Board</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="teams.html">Current Teams</a>
+                        <a class="nav-link" href="teams.html">Current Teams</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="https://pokemmo.shoutwiki.com/wiki/PokeMMO_Wiki:Main_page" target="_blank">PokeMMO</a>
@@ -32,6 +32,35 @@
             </div>
         </div>
     </nav>
-    
-    <iframe width="100%" height="825px" src="https://docs.google.com/spreadsheets/d/1yLD2kxDPLumniHBQbohhjLRzfVAk4LEKfxfwUkp9cCQ/edit?usp=sharing"></iframe></body>
+
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Current Drafted Teams</h1>
+        <div class="team-container">
+            <!-- First row: Andres and Dylan -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Andres' Team</h2>
+                    <div id="team-Andres" class="team-box"></div>
+                </div>
+                <div class="col-md-6">
+                    <h2>Dylan's Team</h2>
+                    <div id="team-Dylan" class="team-box"></div>
+                </div>
+            </div>
+            <!-- Second row: Ethan and Tyler -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>Ethan's Team</h2>
+                    <div id="team-Ethan" class="team-box"></div>
+                </div>
+                <div class="col-md-6">
+                    <h2>Tyler's Team</h2>
+                    <div id="team-Tyler" class="team-box"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="teams.js"></script>
+</body>
 </html>

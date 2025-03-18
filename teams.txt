@@ -1,0 +1,105 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const players = ["Andres", "Dylan", "Ethan", "Tyler"];
+    const playerContainers = {
+        "Andres": document.getElementById("team-Andres"),
+        "Dylan": document.getElementById("team-Dylan"),
+        "Ethan": document.getElementById("team-Ethan"),
+        "Tyler": document.getElementById("team-Tyler")
+    };
+
+    function loadDraftedTeams() {
+        console.log("Loading drafted teams...");
+        const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+        console.debug("Drafted Pokemon from storage:", draftedPokemons);
+        
+        players.forEach(player => {
+            console.log(`Processing team for ${player}`);
+            // Clear existing content for this player's container
+            playerContainers[player].innerHTML = "";
+            
+            // Create table element for the player's team
+            const table = document.createElement("table");
+            table.classList.add("team-table");
+            
+            // Create table header row with 3 columns
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            ["Sprite", "Name", "Points"].forEach(text => {
+                const th = document.createElement("th");
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // Create table body with exactly 6 rows (one per Pokémon)
+            const tbody = document.createElement("tbody");
+            // Filter the drafted Pokémon for the current player
+            const playerDrafts = draftedPokemons.filter(entry => entry.player === player);
+            console.log(`${player} has ${playerDrafts.length} drafted Pokémon`);
+            
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement("tr");
+                if (i < playerDrafts.length) {
+                    const entry = playerDrafts[i];
+                    console.log(`Row ${i} for ${player}: Using drafted Pokémon: ${entry.pokemon}`);
+                    
+                    // Sprite cell
+                    const tdSprite = document.createElement("td");
+                    const img = document.createElement("img");
+                    img.src = entry.sprite;
+                    img.alt = entry.pokemon;
+                    img.classList.add("pokemon-img");
+                    tdSprite.appendChild(img);
+                    
+                    // Name cell
+                    const tdName = document.createElement("td");
+                    tdName.textContent = entry.pokemon.toUpperCase();
+                    
+                    // Points cell
+                    const tdPoints = document.createElement("td");
+                    tdPoints.textContent = entry.points;
+                    
+                    row.appendChild(tdSprite);
+                    row.appendChild(tdName);
+                    row.appendChild(tdPoints);
+                } else {
+                    console.log(`Row ${i} for ${player}: Creating placeholder row`);
+                    // Create 3 empty cells as placeholders
+                    for (let j = 0; j < 3; j++) {
+                        const td = document.createElement("td");
+                        td.classList.add("placeholder");
+                        row.appendChild(td);
+                    }
+                }
+                tbody.appendChild(row);
+            }
+            table.appendChild(tbody);
+            
+            // Create table footer for budget display
+            const tfoot = document.createElement("tfoot");
+            const footerRow = document.createElement("tr");
+            const footerCell = document.createElement("td");
+            footerCell.setAttribute("colspan", "3");
+            let usedPoints = 0;
+            playerDrafts.forEach(entry => {
+                usedPoints += Number(entry.points);
+            });
+            const totalBudget = 15;
+            const remaining = totalBudget - usedPoints;
+            footerCell.textContent = `Budget: ${totalBudget} | Used: ${usedPoints} | Remaining: ${remaining}`;
+            footerRow.appendChild(footerCell);
+            tfoot.appendChild(footerRow);
+            table.appendChild(tfoot);
+            
+            console.log(`Appending table for ${player}`);
+            playerContainers[player].appendChild(table);
+        });
+    }
+    
+    // Initial load of drafted teams
+    loadDraftedTeams();
+    
+    // Update teams when a new draft occurs
+    window.addEventListener("draftUpdated", loadDraftedTeams);
+});
