@@ -114,46 +114,57 @@ function toPascalCase(str) {
     .join("");
 }
 function restorePokemonToDraftBoard(pokemonName) {
-    // 🎯 Get the tier container
-    const tiersDiv = document.getElementById("tiers");
+  // 🎯 Get the tier container
+  const tiersDiv = document.getElementById("tiers");
 
-    // 🎯 Find the Pokémon's tier
-    let points = pokemonPoints[pokemonName];
+  // 🎯 Find the Pokémon's tier
+  let points = pokemonPoints[pokemonName];
 
-    if (points === undefined) {
-        console.warn(`Pokemon ${pokemonName} not found in points list.`);
-        return;
-    }
+  if (points === undefined) {
+    console.warn(`Pokemon ${pokemonName} not found in points list.`);
+    return;
+  }
 
-    // 🎯 Find the correct tier section
-    let tierSection = document.getElementById(`tier-${points}`);
+  // 🎯 Find the correct tier section
+  let tierSection = document.getElementById(`tier-${points}`);
 
-    if (!tierSection) {
-        console.warn(`Tier ${points} not found for ${pokemonName}.`);
-        return;
-    }
+  if (!tierSection) {
+    console.warn(`Tier ${points} not found for ${pokemonName}.`);
+    return;
+  }
 
-    // 🎯 Fetch Pokémon details again to re-add to the draft board
-    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
-        .then(response => response.json())
-        .then(data => {
-            let sprite = data.sprites.versions["generation-v"]["black-white"].animated.front_default;
-            if (!sprite) return; // Exit if no sprite found
+  // 🎯 Fetch Pokémon details again to re-add to the draft board
+  fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+    .then((response) => response.json())
+    .then((data) => {
+      let sprite =
+        data.sprites.versions["generation-v"]["black-white"].animated
+          .front_default;
+      if (!sprite) return; // Exit if no sprite found
 
-            // 🎯 Generate correct PokeMMO Wiki link
-            let formattedName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
-            let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
+      // 🎯 Generate correct PokeMMO Wiki link
+      let formattedName =
+        pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
+      let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
 
-            // 🎯 Handle special cases like Rotom forms
-            if (["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"].includes(pokemonName)) {
-                wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
-            }
+      // 🎯 Handle special cases like Rotom forms
+      if (
+        [
+          "rotom-heat",
+          "rotom-wash",
+          "rotom-mow",
+          "rotom-fan",
+          "rotom-frost",
+        ].includes(pokemonName)
+      ) {
+        wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
+      }
 
-            // 🎯 Create new Pokémon card
-            let pokeDiv = document.createElement("div");
-            pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
+      // 🎯 Create new Pokémon card
+      let pokeDiv = document.createElement("div");
+      pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
 
-            pokeDiv.innerHTML = `
+      pokeDiv.innerHTML = `
                 <a href="${wikiUrl}" target="_blank" class="pokemon-link">
                     <img src="${sprite}" class="pokemon-gif" alt="${pokemonName}">
                 </a>
@@ -162,90 +173,94 @@ function restorePokemonToDraftBoard(pokemonName) {
                 <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
             `;
 
-            // 🎯 Add back to the tier section
-            tierSection.appendChild(pokeDiv);
-        })
-        .catch(error => console.error("Error restoring Pokémon:", error));
+      // 🎯 Add back to the tier section
+      tierSection.appendChild(pokeDiv);
+    })
+    .catch((error) => console.error("Error restoring Pokémon:", error));
 }
 function toggleDraftTimer() {
-    const timerElement = document.getElementById("draft-timer");
+  const timerElement = document.getElementById("draft-timer");
 
-    // 🔄 If the timer is paused, reset it
-    if (isTimerPaused) {
-        resetTimer();
-        return;
-    }
-
-    // 🛑 If the timer is running, pause it
-    if (isTimerRunning) {
-        clearInterval(countdown);
-        isTimerRunning = false;
-        isTimerPaused = true;
-        timerElement.textContent += " (Paused)";
-        return;
-    }
-
-    // 🆕 If not running or paused, start a new timer
+  // 🔄 If the timer is paused, reset it
+  if (isTimerPaused) {
     resetTimer();
-    startTimer();
+    return;
+  }
+
+  // 🛑 If the timer is running, pause it
+  if (isTimerRunning) {
+    clearInterval(countdown);
+    isTimerRunning = false;
+    isTimerPaused = true;
+    timerElement.textContent += " (Paused)";
+    return;
+  }
+
+  // 🆕 If not running or paused, start a new timer
+  resetTimer();
+  startTimer();
 }
 
 // 🏁 Starts the countdown
 function startTimer() {
-    const timerElement = document.getElementById("draft-timer");
-    isTimerRunning = true;
-    isTimerPaused = false;
+  const timerElement = document.getElementById("draft-timer");
+  isTimerRunning = true;
+  isTimerPaused = false;
 
-    function updateTimerDisplay() {
-        let minutes = Math.floor(timeLeft / 60);
-        let seconds = timeLeft % 60;
-        timerElement.textContent = `Draft Timer: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  function updateTimerDisplay() {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerElement.textContent = `Draft Timer: ${minutes}:${
+      seconds < 10 ? "0" : ""
+    }${seconds}`;
+  }
+
+  updateTimerDisplay(); // Show initial time
+
+  countdown = setInterval(() => {
+    if (timeLeft <= 0) {
+      clearInterval(countdown);
+      timerElement.textContent = "Pokémon Draft Tier List"; // Reset title
+      isTimerRunning = false;
+    } else {
+      timeLeft--;
+      updateTimerDisplay();
     }
-
-    updateTimerDisplay(); // Show initial time
-
-    countdown = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(countdown);
-            timerElement.textContent = "Pokémon Draft Tier List"; // Reset title
-            isTimerRunning = false;
-        } else {
-            timeLeft--;
-            updateTimerDisplay();
-        }
-    }, 1000);
+  }, 1000);
 }
 
 // 🔄 Resets the timer
 function resetTimer() {
-    clearInterval(countdown);
-    timeLeft = 5 * 60; // Reset to 5 minutes
-    isTimerRunning = false;
-    isTimerPaused = false;
-    document.getElementById("draft-timer").textContent = "Pokémon Draft Tier List";
+  clearInterval(countdown);
+  timeLeft = 5 * 60; // Reset to 5 minutes
+  isTimerRunning = false;
+  isTimerPaused = false;
+  document.getElementById("draft-timer").textContent =
+    "Pokémon Draft Tier List";
 }
 function undoLastDraftForPlayer(player) {
-    let draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
-    
-    // 🔹 Find the last Pokémon drafted by this player
-    let lastIndex = draftedPokemons.map(p => p.player).lastIndexOf(player);
-    
-    if (lastIndex === -1) {
-        alert(`${player} has no drafts to undo!`);
-        return;
-    }
+  let draftedPokemons =
+    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
 
-    let removedPokemon = draftedPokemons.splice(lastIndex, 1)[0]; // Remove last Pokémon for this player
-    localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
+  // 🔹 Find the last Pokémon drafted by this player
+  let lastIndex = draftedPokemons.map((p) => p.player).lastIndexOf(player);
 
-    alert(`Removed ${removedPokemon.pokemon} from ${player}'s team.`);
+  if (lastIndex === -1) {
+    alert(`${player} has no drafts to undo!`);
+    return;
+  }
 
-    // 🎯 Step 1: Restore Pokémon to the draft board
-    restorePokemonToDraftBoard(removedPokemon.pokemon);
+  let removedPokemon = draftedPokemons.splice(lastIndex, 1)[0]; // Remove last Pokémon for this player
+  localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
 
-    // 🎯 Step 2: Update UI elements
-    updateBudgetTable();
-    removeDraftedFromBoard();
+  alert(`Removed ${removedPokemon.pokemon} from ${player}'s team.`);
+
+  // 🎯 Step 1: Restore Pokémon to the draft board
+  restorePokemonToDraftBoard(removedPokemon.pokemon);
+
+  // 🎯 Step 2: Update UI elements
+  updateBudgetTable();
+  removeDraftedFromBoard();
 }
 async function fetchPokemonData() {
   try {
@@ -301,23 +316,33 @@ async function fetchPokemonData() {
       const pokemonData = await pokemonResponse.json();
 
       // Fetch animated GIF sprite from Gen 5 (Black & White)
-      const sprite =
+      const frontSprite =
         pokemonData.sprites.versions["generation-v"]["black-white"].animated
           .front_default;
-      if (!sprite) return; // If no sprite exists, exit function
+      const backSprite =
+        pokemonData.sprites.versions["generation-v"]["black-white"].animated
+          .back_default;
+      if (!frontSprite || !backSprite) return; // Ensure both front & back sprites exist
 
       const pokeDiv = document.createElement("div");
       pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
 
       pokeDiv.innerHTML = `
-                <a href="${wikiUrl}" target="_blank" class="pokemon-link">
-                    <img src="${sprite}" class="pokemon-gif" alt="${name}">
-                </a>
-                <p class="pokemon-name">${name.toUpperCase()} (${points} Pts)</p>
-                <button class="draft-btn btn btn-sm" data-name="${name}">Draft</button>
-                <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
-            `;
+      <img src="${frontSprite}" class="pokemon-gif" alt="${name}" data-front="${frontSprite}" data-back="${backSprite}">
+      <p class="pokemon-name">${name.toUpperCase()} (${points} Pts)</p>
+      <button class="draft-btn btn btn-sm" data-name="${name}">Draft</button>
+      <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
+  `;
 
+      // ✅ Add event listener to toggle sprite on click
+      pokeDiv
+        .querySelector(".pokemon-gif")
+        .addEventListener("click", function () {
+          this.src =
+            this.src === this.dataset.front
+              ? this.dataset.back
+              : this.dataset.front;
+        });
       tierElements[points].appendChild(pokeDiv);
     };
 
@@ -364,81 +389,83 @@ async function fetchPokemonData() {
 async function updateBudgetTable() {
   const players = ["Andres", "Dylan", "Ethan", "Tyler"];
   const totalBudget = 13;
-  const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+  const draftedPokemons =
+    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
 
   for (const player of players) {
-      let usedPoints = draftedPokemons
-          .filter(entry => entry.player === player)
-          .reduce((sum, entry) => sum + Number(entry.points), 0);
-      let remainingBudget = totalBudget - usedPoints;
+    let usedPoints = draftedPokemons
+      .filter((entry) => entry.player === player)
+      .reduce((sum, entry) => sum + Number(entry.points), 0);
+    let remainingBudget = totalBudget - usedPoints;
 
-      document.getElementById(`budget-${player}-used`).textContent = usedPoints;
-      document.getElementById(`budget-${player}-remaining`).textContent = remainingBudget;
+    document.getElementById(`budget-${player}-used`).textContent = usedPoints;
+    document.getElementById(`budget-${player}-remaining`).textContent =
+      remainingBudget;
 
-      // 🎯 Update the Current Team Icons
-      const teamIconsContainer = document.getElementById(`team-${player}-icons`);
-      teamIconsContainer.innerHTML = ""; // Clear existing icons
+    // 🎯 Update the Current Team Icons
+    const teamIconsContainer = document.getElementById(`team-${player}-icons`);
+    teamIconsContainer.innerHTML = ""; // Clear existing icons
 
-      for (const entry of draftedPokemons.filter(p => p.player === player)) {
-          const iconUrl = await fetchPokemonIcon(entry.pokemon);
-          if (iconUrl) {
-              let img = document.createElement("img");
-              img.src = iconUrl;
-              img.classList.add("team-icon");
-              teamIconsContainer.appendChild(img);
-          }
+    for (const entry of draftedPokemons.filter((p) => p.player === player)) {
+      const iconUrl = await fetchPokemonIcon(entry.pokemon);
+      if (iconUrl) {
+        let img = document.createElement("img");
+        img.src = iconUrl;
+        img.classList.add("team-icon");
+        teamIconsContainer.appendChild(img);
       }
+    }
   }
 }
 function removeDraftedFromBoard() {
-    const draftedPokemons =
-      JSON.parse(localStorage.getItem("draftedPokemons")) || [];
-    draftedPokemons.forEach(({ pokemon }) => {
-      const draftButton = document.querySelector(
-        `.draft-btn[data-name='${pokemon}']`
-      );
-      if (draftButton) {
-        draftButton.closest(".pokemon-card").remove();
-      }
-    });
-  }
-
+  const draftedPokemons =
+    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+  draftedPokemons.forEach(({ pokemon }) => {
+    const draftButton = document.querySelector(
+      `.draft-btn[data-name='${pokemon}']`
+    );
+    if (draftButton) {
+      draftButton.closest(".pokemon-card").remove();
+    }
+  });
+}
 
 async function fetchPokemonIcon(pokemonName) {
-    try {
-        let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-        if (!response.ok) throw new Error("Failed to fetch Pokémon data");
+  try {
+    let response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
+    );
+    if (!response.ok) throw new Error("Failed to fetch Pokémon data");
 
-        let data = await response.json();
-        return data.sprites.versions["generation-viii"].icons.front_default;
-    } catch (error) {
-        console.error(`Error fetching icon for ${pokemonName}:`, error);
-        return null;
-    }
+    let data = await response.json();
+    return data.sprites.versions["generation-viii"].icons.front_default;
+  } catch (error) {
+    console.error(`Error fetching icon for ${pokemonName}:`, error);
+    return null;
+  }
 }
 
 // 🔹 Attach event listener to the H1 title
-document.getElementById("draft-timer").addEventListener("click", toggleDraftTimer);
+document
+  .getElementById("draft-timer")
+  .addEventListener("click", toggleDraftTimer);
 
 // 🔹 Attach event listeners to all undo buttons
-document.querySelectorAll(".undo-btn").forEach(button => {
-    button.addEventListener("click", function () {
-        let player = this.getAttribute("data-player");
-        undoLastDraftForPlayer(player);
-    });
+document.querySelectorAll(".undo-btn").forEach((button) => {
+  button.addEventListener("click", function () {
+    let player = this.getAttribute("data-player");
+    undoLastDraftForPlayer(player);
+  });
 });
 
 // 🔹 Attach event listeners to all undo buttons
-document.querySelectorAll(".undo-btn").forEach(button => {
-    button.addEventListener("click", function () {
-        let player = this.getAttribute("data-player");
-        undoLastDraftForPlayer(player);
-    });
+document.querySelectorAll(".undo-btn").forEach((button) => {
+  button.addEventListener("click", function () {
+    let player = this.getAttribute("data-player");
+    undoLastDraftForPlayer(player);
+  });
 });
 
-
-
-  
 document.addEventListener("DOMContentLoaded", function () {
   // Modified to wait for fetchPokemonData to complete before removing drafted Pokémon
   fetchPokemonData().then(() => {
@@ -447,78 +474,80 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// 2️⃣ Setup the Modal & Event Listeners 
+// 2️⃣ Setup the Modal & Event Listeners
 let draftModal = new bootstrap.Modal(document.getElementById("draftModal"));
 let selectedPokemon = null; // Stores selected Pokémon temporarily
 document.addEventListener("click", function (event) {
-    const draftBtn = event.target.closest(".draft-btn");
+  const draftBtn = event.target.closest(".draft-btn");
 
-    if (draftBtn) {
-        event.preventDefault();
+  if (draftBtn) {
+    event.preventDefault();
 
-        // Store selected Pokémon data
-        selectedPokemon = {
-            name: draftBtn.getAttribute("data-name"),
-            points: pokemonPoints[draftBtn.getAttribute("data-name")],
-            sprite: draftBtn.parentElement.querySelector("img").src
-        };
+    // Store selected Pokémon data
+    selectedPokemon = {
+      name: draftBtn.getAttribute("data-name"),
+      points: pokemonPoints[draftBtn.getAttribute("data-name")],
+      sprite: draftBtn.parentElement.querySelector("img").src,
+    };
 
-        // Update modal text with Pokémon name
-        document.getElementById("pokemonNamePlaceholder").textContent = selectedPokemon.name.toUpperCase();
+    // Update modal text with Pokémon name
+    document.getElementById("pokemonNamePlaceholder").textContent =
+      selectedPokemon.name.toUpperCase();
 
-        // Show the modal
-        draftModal.show();
-    }
+    // Show the modal
+    draftModal.show();
+  }
 });
 
 // 3️⃣ Confirm Draft Logic (🔹 Place this right after draft button listener)
 document.getElementById("confirmDraft").addEventListener("click", function () {
-    if (!selectedPokemon) return;
+  if (!selectedPokemon) return;
 
-    let selectedPlayer = document.getElementById("playerSelect").value;
-    let selectedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+  let selectedPlayer = document.getElementById("playerSelect").value;
+  let selectedPokemons =
+    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
 
-    // Calculate remaining budget
-    let usedPoints = selectedPokemons
-        .filter(entry => entry.player === selectedPlayer)
-        .reduce((sum, entry) => sum + Number(entry.points), 0);
-    let remainingBudget = 13 - usedPoints;
+  // Calculate remaining budget
+  let usedPoints = selectedPokemons
+    .filter((entry) => entry.player === selectedPlayer)
+    .reduce((sum, entry) => sum + Number(entry.points), 0);
+  let remainingBudget = 13 - usedPoints;
 
-    if (remainingBudget - selectedPokemon.points < 0) {
-        alert(`${selectedPlayer} does not have enough points to draft ${selectedPokemon.name}.`);
-        return;
-    }
+  if (remainingBudget - selectedPokemon.points < 0) {
+    alert(
+      `${selectedPlayer} does not have enough points to draft ${selectedPokemon.name}.`
+    );
+    return;
+  }
 
-    // Check if Pokémon is already drafted
-    if (!selectedPokemons.some(entry => entry.pokemon === selectedPokemon.name)) {
-        selectedPokemons.push({
-            player: selectedPlayer,
-            pokemon: selectedPokemon.name,
-            sprite: selectedPokemon.sprite,
-            points: selectedPokemon.points
-        });
+  // Check if Pokémon is already drafted
+  if (
+    !selectedPokemons.some((entry) => entry.pokemon === selectedPokemon.name)
+  ) {
+    selectedPokemons.push({
+      player: selectedPlayer,
+      pokemon: selectedPokemon.name,
+      sprite: selectedPokemon.sprite,
+      points: selectedPokemon.points,
+    });
 
-        localStorage.setItem("draftedPokemons", JSON.stringify(selectedPokemons));
-        ///alert(`${selectedPokemon.name} added to ${selectedPlayer}'s team!`);
+    localStorage.setItem("draftedPokemons", JSON.stringify(selectedPokemons));
+    ///alert(`${selectedPokemon.name} added to ${selectedPlayer}'s team!`);
 
-        window.dispatchEvent(new Event("draftUpdated"));
-        removeDraftedFromBoard();
-        updateBudgetTable(); // ✅ Ensures icons update live
-        
+    window.dispatchEvent(new Event("draftUpdated"));
+    removeDraftedFromBoard();
+    updateBudgetTable(); // ✅ Ensures icons update live
 
-        draftModal.hide(); // Close modal after selection
-    } else {
-        alert(`${selectedPokemon.name} is already selected.`);
-    }
+    draftModal.hide(); // Close modal after selection
+  } else {
+    alert(`${selectedPokemon.name} is already selected.`);
+  }
 });
 // 4️⃣ Page Initialization (Keep existing document ready functions)
 document.addEventListener("DOMContentLoaded", function () {
-    
-        removeDraftedFromBoard();
-        updateBudgetTable();
-    
+  removeDraftedFromBoard();
+  updateBudgetTable();
 });
-
 
 function resetDraft() {
   localStorage.removeItem("draftedPokemons");
