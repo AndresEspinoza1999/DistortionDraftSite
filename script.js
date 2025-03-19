@@ -212,26 +212,21 @@ function restorePokemonToDraftBoard(pokemonName) {
 function toggleDraftTimer() {
   const timerElement = document.getElementById("draft-timer");
 
-  // 🔄 If the timer is paused, reset it
   if (isTimerPaused) {
-    resetTimer();
-    return;
+      startTimer(); // ⏯ Resume from paused state
+      return;
   }
 
-  // 🛑 If the timer is running, pause it
   if (isTimerRunning) {
-    clearInterval(countdown);
-    isTimerRunning = false;
-    isTimerPaused = true;
-    timerElement.textContent += " (Paused)";
-    return;
+      clearInterval(countdown);
+      isTimerRunning = false;
+      isTimerPaused = true;
+      timerElement.textContent += " (Paused)";
+      return;
   }
 
-  // 🆕 If not running or paused, start a new timer
-  resetTimer();
-  startTimer();
+  startTimer(); // ⏳ Start the timer if it's not running
 }
-
 // 🏁 Starts the countdown
 function startTimer() {
   const timerElement = document.getElementById("draft-timer");
@@ -259,15 +254,14 @@ function startTimer() {
     }
   }, 1000);
 }
-// 🔄 Resets the timer
 function resetTimer() {
   clearInterval(countdown);
   timeLeft = 5 * 60; // Reset to 5 minutes
   isTimerRunning = false;
   isTimerPaused = false;
-  document.getElementById("draft-timer").textContent =
-    "Pokémon Draft Tier List";
+  document.getElementById("draft-timer").textContent = "Pokémon Draft Tier List";
 }
+
 async function undoLastDraftForPlayer(player) {
   console.log(`🔄 Undo button clicked for ${player}...`);
 
@@ -577,10 +571,6 @@ onValue(ref(db, "drafted"), async (snapshot) => {
   await updateBudgetTable();
 });
 
-
-
-
-
 // 2️⃣ Setup the Modal & Event Listeners
 let draftModal = new bootstrap.Modal(document.getElementById("draftModal"));
 let selectedPokemon = null; // Stores selected Pokémon temporarily
@@ -654,15 +644,13 @@ document.getElementById("confirmDraft").addEventListener("click", async function
    if (modalInstance) modalInstance.hide();
 });
 
-
-
-
 // 4️⃣ Page Initialization (Keep existing document ready functions)
 document.addEventListener("DOMContentLoaded", async function () {
   await fetchPokemonData(); // ✅ Ensure Pokémon load first
   setTimeout(removeDraftedFromBoard, 500); // ✅ Wait before removing drafted Pokémon
 });
 
+document.getElementById("resetTimerBtn").addEventListener("click", resetTimer);
 
 
 async function resetDraft() {
