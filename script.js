@@ -135,12 +135,12 @@ function restorePokemonToDraftBoard(pokemonName) {
 
   // 🎯 Fetch Pokémon details again to re-add to the draft board
   fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let sprite =
-        data.sprites.versions["generation-v"]["black-white"].animated
-          .front_default;
-      if (!sprite) return; // Exit if no sprite found
+  .then(response => response.json())
+  .then(data => {
+      let frontSprite = data.sprites.versions["generation-v"]["black-white"].animated.front_default;
+      let backSprite = data.sprites.versions["generation-v"]["black-white"].animated.back_default;
+      if (!frontSprite || !backSprite) return; // Ensure both sprites exist
+
 
       // 🎯 Generate correct PokeMMO Wiki link
       let formattedName =
@@ -163,15 +163,22 @@ function restorePokemonToDraftBoard(pokemonName) {
       // 🎯 Create new Pokémon card
       let pokeDiv = document.createElement("div");
       pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
-
+      
       pokeDiv.innerHTML = `
-                <a href="${wikiUrl}" target="_blank" class="pokemon-link">
-                    <img src="${sprite}" class="pokemon-gif" alt="${pokemonName}">
-                </a>
-                <p class="pokemon-name">${pokemonName.toUpperCase()} (${points} Pts)</p>
-                <button class="draft-btn btn btn-sm" data-name="${pokemonName}">Draft</button>
-                <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
-            `;
+          <img src="${frontSprite}" class="pokemon-gif" alt="${pokemonName}" data-front="${frontSprite}" data-back="${backSprite}">
+          <p class="pokemon-name">${pokemonName.toUpperCase()} (${points} Pts)</p>
+          <button class="draft-btn btn btn-sm" data-name="${pokemonName}">Draft</button>
+          <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
+      `;
+      
+      // ✅ Add event listener to toggle sprite on click
+      pokeDiv.querySelector(".pokemon-gif").addEventListener("click", function () {
+          this.src = (this.src === this.dataset.front) ? this.dataset.back : this.dataset.front;
+      });
+      
+      // 🎯 Add the restored Pokémon back to its tier section
+      tierSection.appendChild(pokeDiv);
+      
 
       // 🎯 Add back to the tier section
       tierSection.appendChild(pokeDiv);
