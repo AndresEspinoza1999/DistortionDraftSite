@@ -230,36 +230,42 @@ function toggleDraftTimer() {
 // 🏁 Starts the countdown
 function startTimer() {
   const timerElement = document.getElementById("draft-timer");
+  const resetButton = document.getElementById("resetTimerBtn");
+
   isTimerRunning = true;
   isTimerPaused = false;
+  resetButton.style.display = "inline-block"; // 🎯 Show the reset button
 
   function updateTimerDisplay() {
-    let minutes = Math.floor(timeLeft / 60);
-    let seconds = timeLeft % 60;
-    timerElement.textContent = `Draft Timer: ${minutes}:${
-      seconds < 10 ? "0" : ""
-    }${seconds}`;
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerElement.textContent = `Draft Timer: ${minutes}:${
+          seconds < 10 ? "0" : ""
+      }${seconds}`;
   }
 
   updateTimerDisplay(); // Show initial time
 
   countdown = setInterval(() => {
-    if (timeLeft <= 0) {
-      clearInterval(countdown);
-      timerElement.textContent = "Pokémon Draft Tier List"; // Reset title
-      isTimerRunning = false;
-    } else {
-      timeLeft--;
-      updateTimerDisplay();
-    }
+      if (timeLeft <= 0) {
+          clearInterval(countdown);
+          timerElement.textContent = "Pokémon Draft Tier List"; // Reset title
+          isTimerRunning = false;
+          resetButton.style.display = "none"; // 🎯 Hide reset button when timer ends
+      } else {
+          timeLeft--;
+          updateTimerDisplay();
+      }
   }, 1000);
 }
+
 function resetTimer() {
   clearInterval(countdown);
   timeLeft = 5 * 60; // Reset to 5 minutes
   isTimerRunning = false;
   isTimerPaused = false;
   document.getElementById("draft-timer").textContent = "Pokémon Draft Tier List";
+  document.getElementById("resetTimerBtn").style.display = "none"; // 🎯 Hide reset button
 }
 
 async function undoLastDraftForPlayer(player) {
