@@ -1,3 +1,27 @@
+// 🔥 Import Firebase from CDN (Direct URL)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+
+// 🔥 Firebase Configuration (Your Credentials)
+const firebaseConfig = {
+    apiKey: "AIzaSyBAglAu7aDHVF68Szg_eyaIdIuXXIzwPJM",
+    authDomain: "sc9-draft.firebaseapp.com",
+    databaseURL: "https://sc9-draft-default-rtdb.firebaseio.com",
+    projectId: "sc9-draft",
+    storageBucket: "sc9-draft.firebasestorage.app",
+    messagingSenderId: "624184902731",
+    appId: "1:624184902731:web:333821678a86edb143f9ce",
+    measurementId: "G-H4XCMF59TL"
+};
+
+// 🔥 Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const analytics = getAnalytics(app);
+
+console.log("🔥 Firebase Initialized!");
+
 const pokemonPoints = {
   raichu: 1,
   clefable: 3,
@@ -94,12 +118,12 @@ const pokemonPoints = {
   probopass: 1,
   dusknoir: 2,
   froslass: 2,
-  rotom: 1,
-  "rotom-heat": 3,
-  "rotom-wash": 3,
-  "rotom-mow": 2,
-  "rotom-fan": 2,
-  "rotom-frost": 1,
+ "rotom": 1,
+    "rotom-heat": 3,
+    "rotom-wash": 3,
+    "rotom-mow": 2,
+    "rotom-fan": 2,
+    "rotom-frost": 1
 };
 
 let countdown; // Stores the countdown interval
@@ -235,7 +259,6 @@ function startTimer() {
     }
   }, 1000);
 }
-
 // 🔄 Resets the timer
 function resetTimer() {
   clearInterval(countdown);
@@ -245,211 +268,280 @@ function resetTimer() {
   document.getElementById("draft-timer").textContent =
     "Pokémon Draft Tier List";
 }
-function undoLastDraftForPlayer(player) {
-  let draftedPokemons =
-    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+async function undoLastDraftForPlayer(player) {
+  console.log(`🔄 Undo button clicked for ${player}...`);
 
-  // 🔹 Find the last Pokémon drafted by this player
-  let lastIndex = draftedPokemons.map((p) => p.player).lastIndexOf(player);
+  let draftedRef = ref(db, "drafted");
+  let draftedSnapshot = await get(draftedRef);
+  let draftedPokemons = draftedSnapshot.exists() ? Object.values(draftedSnapshot.val()) : [];
 
-  if (lastIndex === -1) {
-    alert(`${player} has no drafts to undo!`);
-    return;
+  console.log(`🔍 Drafted Pokémon before undo:`, draftedPokemons);
+
+  // 🎯 Find the last Pokémon drafted by the player
+  let lastDraftIndex = draftedPokemons.map(p => p.player).lastIndexOf(player);
+  if (lastDraftIndex === -1) {
+      alert(`${player} has no drafts to undo!`);
+      return;
   }
 
-  let removedPokemon = draftedPokemons.splice(lastIndex, 1)[0]; // Remove last Pokémon for this player
-  localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
+  let removedPokemon = draftedPokemons[lastDraftIndex];
 
-  alert(`Removed ${removedPokemon.pokemon} from ${player}'s team.`);
+  console.log(`🛑 Removing only ${removedPokemon.pokemon}, not all!`);
 
-  // 🎯 Step 1: Restore Pokémon to the draft board
+  // 🎯 Remove from Firebase
+  await remove(ref(db, `drafted/${removedPokemon.pokemon}`));
+  console.log(`✅ Removed ${removedPokemon.pokemon} from ${player}'s draft list.`);
+
+  // 🎯 1️⃣ Update Budget Table & Remove Icon
+  updateBudgetTable();
+
+  // 🎯 2️⃣ Restore Pokémon to Draft Board
   restorePokemonToDraftBoard(removedPokemon.pokemon);
 
-  // 🎯 Step 2: Update UI elements
-  updateBudgetTable();
-  removeDraftedFromBoard();
+  // 🎯 3️⃣ Remove Pokémon Icon from Budget Table
+  let teamCell = document.getElementById(`team-${player}-icons`);
+  if (teamCell) {
+      let icons = teamCell.querySelectorAll("img");
+      if (icons.length > 0) {
+          icons[icons.length - 1].remove(); // Remove only the last added icon
+      }
+  }
+
+  alert(`${removedPokemon.pokemon} has been removed from ${player}'s team.`);
 }
+
 async function fetchPokemonData() {
   try {
-    const response = await fetch("https://pokeapi.co/api/v2/pokedex/6");
-    if (!response.ok) throw new Error("Failed to fetch Pokédex data");
-    const data = await response.json();
-    let pokemonEntries = data.pokemon_entries.map((entry) =>
-      entry.pokemon_species.name.toLowerCase()
-    );
-    pokemonEntries.sort();
+      console.log("Fetching Pokémon data...");
 
-    const tiersDiv = document.getElementById("tiers");
-    const tierElements = {};
-    const uniquePoints = [...new Set(Object.values(pokemonPoints))].sort(
-      (a, b) => b - a
-    );
+      const response = await fetch('https://pokeapi.co/api/v2/pokedex/6');
+      if (!response.ok) throw new Error("Failed to fetch Pokédex data");
 
-    for (const points of uniquePoints) {
-      if (!(points in tierElements)) {
-        const tierDiv = document.createElement("div");
-        tierDiv.classList.add("tier", "col-12", "p-3", "shadow-sm");
-        tierDiv.innerHTML = `<button class='btn btn-primary w-100 mb-2' data-bs-toggle='collapse' data-bs-target='#tier-${points}'>Tier ${points} Points</button><div class='collapse show' id='tier-${points}'></div>`;
-        tiersDiv.appendChild(tierDiv);
-        tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
-      }
-    }
+      const data = await response.json();
+      let pokemonEntries = data.pokemon_entries.map(entry => entry.pokemon_species.name.toLowerCase());
+      pokemonEntries.sort();
 
-    const fetchPokemonDetails = async (url, name, points) => {
-      if (!tierElements[points]) {
-        console.error(`Tier ${points} is not defined for ${name}`);
-        return; // Avoid breaking the script if a tier isn't found
-      }
-
-      if (name.endsWith("mega") || name.endsWith("gmax")) return;
-
-      let formattedName = toPascalCase(name);
-      let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
-
-      if (
-        [
-          "rotom-heat",
-          "rotom-wash",
-          "rotom-mow",
-          "rotom-fan",
-          "rotom-frost",
-        ].includes(name)
-      ) {
-        wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
-      }
-
-      const pokemonResponse = await fetch(url);
-      if (!pokemonResponse.ok) return;
-      const pokemonData = await pokemonResponse.json();
-
-      // Fetch animated GIF sprite from Gen 5 (Black & White)
-      const frontSprite =
-        pokemonData.sprites.versions["generation-v"]["black-white"].animated
-          .front_default;
-      const backSprite =
-        pokemonData.sprites.versions["generation-v"]["black-white"].animated
-          .back_default;
-      if (!frontSprite || !backSprite) return; // Ensure both front & back sprites exist
-
-      const pokeDiv = document.createElement("div");
-      pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
-
-      pokeDiv.innerHTML = `
-      <img src="${frontSprite}" class="pokemon-gif" alt="${name}" data-front="${frontSprite}" data-back="${backSprite}">
-      <p class="pokemon-name">${name.toUpperCase()} (${points} Pts)</p>
-      <button class="draft-btn btn btn-sm" data-name="${name}">Draft</button>
-      <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
-  `;
-
-      // ✅ Add event listener to toggle sprite on click
-      pokeDiv
-        .querySelector(".pokemon-gif")
-        .addEventListener("click", function () {
-          this.src =
-            this.src === this.dataset.front
-              ? this.dataset.back
-              : this.dataset.front;
-        });
-      tierElements[points].appendChild(pokeDiv);
-    };
-
-    await Promise.all(
-      pokemonEntries.map(async (name) => {
-        const speciesResponse = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${name}`
-        );
-        if (!speciesResponse.ok) return;
-        const speciesData = await speciesResponse.json();
-
-        const points = pokemonPoints[name];
-        if (points !== undefined) {
-          await fetchPokemonDetails(
-            `https://pokeapi.co/api/v2/pokemon/${name}`,
-            name,
-            points
-          );
-        }
-
-        if (speciesData.forms_switchable) {
-          for (let i = 1; i < speciesData.varieties.length; i++) {
-            const variety = speciesData.varieties[i];
-            const varietyName = variety.pokemon.name;
-            if (varietyName.endsWith("mega") || varietyName.endsWith("gmax"))
-              continue;
-            const varietyPoints = pokemonPoints[varietyName] || points;
-            await fetchPokemonDetails(
-              variety.pokemon.url,
-              varietyName,
-              varietyPoints
-            );
+      // ✅ Ensure Rotom Forms Are Included
+      let rotomForms = ["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"];
+      rotomForms.forEach(form => {
+          if (!pokemonEntries.includes(form)) {
+              pokemonEntries.push(form);
+              console.log(`✅ Added missing Rotom form: ${form}`);
           }
-        }
-      })
-    );
+      });
 
-    // Now that all Pokémon have been rendered, remove those already drafted.
-    removeDraftedFromBoard();
-  } catch (error) {
-    console.error("Error in fetchPokemonData:", error);
-  }
-}
-async function updateBudgetTable() {
-  const players = ["Andres", "Dylan", "Ethan", "Tyler"];
-  const totalBudget = 13;
-  const draftedPokemons =
-    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
-
-  for (const player of players) {
-    let usedPoints = draftedPokemons
-      .filter((entry) => entry.player === player)
-      .reduce((sum, entry) => sum + Number(entry.points), 0);
-    let remainingBudget = totalBudget - usedPoints;
-
-    document.getElementById(`budget-${player}-used`).textContent = usedPoints;
-    document.getElementById(`budget-${player}-remaining`).textContent =
-      remainingBudget;
-
-    // 🎯 Update the Current Team Icons
-    const teamIconsContainer = document.getElementById(`team-${player}-icons`);
-    teamIconsContainer.innerHTML = ""; // Clear existing icons
-
-    for (const entry of draftedPokemons.filter((p) => p.player === player)) {
-      const iconUrl = await fetchPokemonIcon(entry.pokemon);
-      if (iconUrl) {
-        let img = document.createElement("img");
-        img.src = iconUrl;
-        img.classList.add("team-icon");
-        teamIconsContainer.appendChild(img);
+      const tiersDiv = document.getElementById("tiers");
+      if (!tiersDiv) {
+          console.error("Tiers container not found!");
+          return;
       }
-    }
+
+      // 🎯 Clear the draft board before reloading
+      tiersDiv.innerHTML = "";
+
+      const tierElements = {};
+      const uniquePoints = [...new Set(Object.values(pokemonPoints))].sort((a, b) => b - a);
+
+      for (const points of uniquePoints) {
+          if (!(points in tierElements)) {
+              const tierDiv = document.createElement("div");
+              tierDiv.classList.add("tier", "col-12", "p-3", "shadow-sm");
+              tierDiv.innerHTML = `<button class='btn btn-primary w-100 mb-2' data-bs-toggle='collapse' data-bs-target='#tier-${points}'>Tier ${points} Points</button><div class='collapse show' id='tier-${points}'></div>`;
+              tiersDiv.appendChild(tierDiv);
+              tierElements[points] = tierDiv.querySelector(`#tier-${points}`);
+          }
+      }
+
+      console.log("Fetching Firebase drafted Pokémon...");
+      let draftedSnapshot = await get(ref(db, "drafted"));
+      let draftedPokemons = draftedSnapshot.exists() ? Object.keys(draftedSnapshot.val()) : [];
+
+      await Promise.all(pokemonEntries.map(async (name) => {
+          if (!(name in pokemonPoints)) {
+              console.warn(`⚠ Skipping ${name} (no point value found)`);
+              return;
+          }
+
+          if (draftedPokemons.includes(name)) {
+              console.warn(`⚠ Skipping ${name} (already drafted)`);
+              return;
+          }
+
+          // 🎯 Correct Rotom Form Names for API Fetching
+          let formattedName = name;
+          const rotomForms = {
+             "rotom-heat": "rotom-heat",
+        "rotom-wash": "rotom-wash",
+        "rotom-mow": "rotom-mow",
+        "rotom-fan": "rotom-fan",
+        "rotom-frost": "rotom-frost"
+          };
+
+          if (rotomForms[name]) {
+              formattedName = rotomForms[name]; // Convert to correct PokéAPI format
+          }
+
+          console.log(`🔍 Fetching Pokémon: ${formattedName}`);
+
+          // 🎯 Fetch Pokémon Data
+          let pokemonResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${formattedName}`);
+
+          if (!pokemonResponse.ok) {
+              console.warn(`⚠ API did not return data for ${formattedName} (Status: ${pokemonResponse.status}). Trying alternative fetch...`);
+
+              // 🔄 Try fetching from base Rotom and extracting its forms
+              let baseRotomResponse = await fetch("https://pokeapi.co/api/v2/pokemon/rotom");
+              if (baseRotomResponse.ok) {
+                  let baseRotomData = await baseRotomResponse.json();
+                  let formData = baseRotomData.forms.find(f => f.name === formattedName);
+
+                  if (formData) {
+                      console.log(`✅ Found alternative form data for ${formattedName}: ${formData.url}`);
+                      pokemonResponse = await fetch(formData.url);
+                  }
+              }
+          }
+
+          if (!pokemonResponse.ok) {
+              console.warn(`⚠ Failed to retrieve Pokémon data for ${formattedName} after alternative fetch.`);
+              return;
+          }
+
+          const pokemonData = await pokemonResponse.json();
+          console.log(`✅ API Data Found for ${formattedName}`);
+
+          // 🎯 Get Front & Back Sprites
+          const frontSprite = pokemonData.sprites.versions["generation-v"]["black-white"].animated.front_default;
+          const backSprite = pokemonData.sprites.versions["generation-v"]["black-white"].animated.back_default;
+
+          if (!frontSprite || !backSprite) {
+              console.warn(`⚠ Missing sprites for ${formattedName}`);
+              return;
+          }
+
+          console.log(`✅ Creating Pokémon card for ${formattedName}`);
+
+          // 🎯 Create Pokémon Card
+          const pokeDiv = document.createElement('div');
+          pokeDiv.classList.add('pokemon-card', 'text-center', 'shadow-sm');
+          pokeDiv.innerHTML = `
+              <img src="${frontSprite}" class="pokemon-gif" alt="${name}" data-front="${frontSprite}" data-back="${backSprite}">
+              <p class="pokemon-name">${name.toUpperCase()} (${pokemonPoints[name]} Pts)</p>
+              <button class="draft-btn btn btn-sm" data-name="${name}">Draft</button>
+              <a href="https://pokemmo.shoutwiki.com/wiki/${name}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
+          `;
+
+          // ✅ Click to Toggle Sprite
+          pokeDiv.querySelector(".pokemon-gif").addEventListener("click", function () {
+              this.src = (this.src === this.dataset.front) ? this.dataset.back : this.dataset.front;
+          });
+
+          tierElements[pokemonPoints[name]].appendChild(pokeDiv);
+          console.log(`✅ Added ${formattedName} to the draft board.`);
+      }));
+
+      console.log("✅ Pokémon data loaded successfully!");
+  } catch (error) {
+      console.error("❌ Error in fetchPokemonData:", error);
   }
-}
-function removeDraftedFromBoard() {
-  const draftedPokemons =
-    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
-  draftedPokemons.forEach(({ pokemon }) => {
-    const draftButton = document.querySelector(
-      `.draft-btn[data-name='${pokemon}']`
-    );
-    if (draftButton) {
-      draftButton.closest(".pokemon-card").remove();
-    }
-  });
 }
 
 async function fetchPokemonIcon(pokemonName) {
-  try {
-    let response = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
-    );
-    if (!response.ok) throw new Error("Failed to fetch Pokémon data");
+  console.log(`🔍 Calling fetchPokemonIcon() for: ${pokemonName}`);
 
-    let data = await response.json();
-    return data.sprites.versions["generation-viii"].icons.front_default;
+  try {
+      let formattedName = pokemonName.toLowerCase().replace(" ", "-"); // 🔄 Fix name formatting
+      let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${formattedName}`);
+
+      if (!response.ok) {
+          console.warn(`⚠ Pokémon API returned ${response.status} for ${formattedName}`);
+          return null; // Don't break execution
+      }
+
+      let data = await response.json();
+      let iconUrl = data.sprites.versions["generation-viii"].icons.front_default;
+
+      if (iconUrl) {
+          console.log(`✅ Icon found for ${pokemonName}: ${iconUrl}`);
+      } else {
+          console.warn(`⚠ No icon found for ${pokemonName}`);
+      }
+
+      return iconUrl;
   } catch (error) {
-    console.error(`Error fetching icon for ${pokemonName}:`, error);
-    return null;
+      console.error(`❌ Error fetching icon for ${pokemonName}:`, error);
+      return null;
   }
+}
+
+async function updateBudgetTable() {
+  console.log("🔄 Updating budget table...");
+
+  let table = document.getElementById("budget-table"); // ✅ Ensure correct table ID
+  if (!table) {
+      console.error("❌ Budget table not found!");
+      return;
+  }
+
+  let draftedSnapshot = await get(ref(db, "drafted"));
+  let draftedPokemons = draftedSnapshot.exists() ? Object.values(draftedSnapshot.val()) : [];
+
+  table.querySelectorAll("tbody tr").forEach(row => {
+      let playerName = row.cells[0].innerText.trim();
+      let playerPokemons = draftedPokemons.filter(entry => entry.player === playerName);
+
+      let usedCell = row.cells[1];
+      let remainingCell = row.cells[2];
+      let teamCell = row.cells[3];
+
+      // 🎯 1️⃣ Update Points Used & Remaining Budget
+      let usedPoints = playerPokemons.reduce((sum, entry) => sum + Number(entry.points), 0);
+      let remainingBudget = 13 - usedPoints; // Ensure 13 is the correct starting budget
+
+      usedCell.textContent = usedPoints;
+      remainingCell.textContent = remainingBudget;
+
+      // 🎯 2️⃣ Clear and Update Pokémon Icons
+      teamCell.innerHTML = "";
+      playerPokemons.forEach(async (entry) => {
+          console.log(`🎨 Attempting to fetch icon for ${entry.pokemon}...`);
+          let iconUrl = await fetchPokemonIcon(entry.pokemon);
+
+          if (iconUrl) {
+              let img = document.createElement("img");
+              img.src = iconUrl;
+              img.classList.add("team-icon");
+              teamCell.appendChild(img);
+              console.log(`✅ Added icon for ${entry.pokemon} to ${playerName}'s team.`);
+          } else {
+              console.warn(`⚠ No icon available for ${entry.pokemon}.`);
+          }
+      });
+  });
+
+  console.log("✅ Budget table updated!");
+}
+
+async function removeDraftedFromBoard() {
+  console.log("Removing drafted Pokémon...");
+  
+  let draftedSnapshot = await get(ref(db, "drafted"));
+  if (!draftedSnapshot.exists()) {
+      console.log("No drafted Pokémon found.");
+      return;
+  }
+
+  let draftedPokemons = Object.values(draftedSnapshot.val());
+
+  draftedPokemons.forEach(({ pokemon }) => {
+      const draftButton = document.querySelector(`.draft-btn[data-name='${pokemon}']`);
+      if (draftButton) {
+          draftButton.closest(".pokemon-card").remove();
+          console.log(`Removed ${pokemon} from the draft board.`);
+      }
+  });
+
+  console.log("Drafted Pokémon removed successfully!");
 }
 
 // 🔹 Attach event listener to the H1 title
@@ -465,21 +557,24 @@ document.querySelectorAll(".undo-btn").forEach((button) => {
   });
 });
 
-// 🔹 Attach event listeners to all undo buttons
-document.querySelectorAll(".undo-btn").forEach((button) => {
-  button.addEventListener("click", function () {
-    let player = this.getAttribute("data-player");
-    undoLastDraftForPlayer(player);
-  });
+// 🔥 Listen for real-time updates from Firebase and update UI
+onValue(ref(db, "drafted"), async (snapshot) => {
+  console.log("Firebase draft data updated!");
+
+  let draftedPokemons = [];
+  if (snapshot.exists()) {
+      draftedPokemons = Object.values(snapshot.val());
+  }
+
+  localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
+
+  // 🎯 Rebuild the board after every draft change
+  await fetchPokemonData();
+  removeDraftedFromBoard();
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Modified to wait for fetchPokemonData to complete before removing drafted Pokémon
-  fetchPokemonData().then(() => {
-    removeDraftedFromBoard();
-    updateBudgetTable();
-  });
-});
+
+
 
 // 2️⃣ Setup the Modal & Event Listeners
 let draftModal = new bootstrap.Modal(document.getElementById("draftModal"));
@@ -507,66 +602,103 @@ document.addEventListener("click", function (event) {
 });
 
 // 3️⃣ Confirm Draft Logic (🔹 Place this right after draft button listener)
-document.getElementById("confirmDraft").addEventListener("click", function () {
+document.getElementById("confirmDraft").addEventListener("click", async function () {
   if (!selectedPokemon) return;
 
   let selectedPlayer = document.getElementById("playerSelect").value;
-  let selectedPokemons =
-    JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+  let draftedRef = ref(db, "drafted");
 
-  // Calculate remaining budget
-  let usedPoints = selectedPokemons
-    .filter((entry) => entry.player === selectedPlayer)
-    .reduce((sum, entry) => sum + Number(entry.points), 0);
-  let remainingBudget = 13 - usedPoints;
+  // 🔥 Fetch current draft data from Firebase
+  let draftedSnapshot = await get(draftedRef);
+  let draftedPokemons = draftedSnapshot.exists() ? Object.values(draftedSnapshot.val()) : [];
 
-  if (remainingBudget - selectedPokemon.points < 0) {
-    alert(
-      `${selectedPlayer} does not have enough points to draft ${selectedPokemon.name}.`
-    );
-    return;
+  // 🎯 1️⃣ Check if Pokémon is already drafted
+  if (draftedPokemons.some(entry => entry.pokemon === selectedPokemon.name)) {
+      alert(`${selectedPokemon.name} is already selected.`);
+      return;
   }
 
-  // Check if Pokémon is already drafted
-  if (
-    !selectedPokemons.some((entry) => entry.pokemon === selectedPokemon.name)
-  ) {
-    selectedPokemons.push({
+  // 🎯 2️⃣ Calculate remaining budget
+  let usedPoints = draftedPokemons
+      .filter(entry => entry.player === selectedPlayer)
+      .reduce((sum, entry) => sum + Number(entry.points), 0);
+  let remainingBudget = 13 - usedPoints;
+
+  // 🎯 3️⃣ Check if player has enough points
+  if (remainingBudget - selectedPokemon.points < 0) {
+      alert(`${selectedPlayer} does not have enough points to draft ${selectedPokemon.name}.`);
+      return;
+  }
+
+  // 🎯 4️⃣ Save to Firebase (Syncs for All Players)
+  await set(ref(db, `drafted/${selectedPokemon.name}`), {
       player: selectedPlayer,
       pokemon: selectedPokemon.name,
       sprite: selectedPokemon.sprite,
-      points: selectedPokemon.points,
-    });
+      points: selectedPokemon.points
+  });
 
-    localStorage.setItem("draftedPokemons", JSON.stringify(selectedPokemons));
-    ///alert(`${selectedPokemon.name} added to ${selectedPlayer}'s team!`);
+  alert(`${selectedPokemon.name} added to ${selectedPlayer}'s team!`);
 
-    window.dispatchEvent(new Event("draftUpdated"));
-    removeDraftedFromBoard();
-    updateBudgetTable(); // ✅ Ensures icons update live
-
-    draftModal.hide(); // Close modal after selection
-  } else {
-    alert(`${selectedPokemon.name} is already selected.`);
-  }
-});
-// 4️⃣ Page Initialization (Keep existing document ready functions)
-document.addEventListener("DOMContentLoaded", function () {
+  // ✅ Update the UI Immediately
+  updateBudgetTable();
   removeDraftedFromBoard();
-  updateBudgetTable();
+   // ✅ Close the modal after drafting
+   let draftModal = document.getElementById("draftModal");
+   let modalInstance = bootstrap.Modal.getInstance(draftModal);
+   if (modalInstance) modalInstance.hide();
 });
 
-function resetDraft() {
-  localStorage.removeItem("draftedPokemons");
-  updateBudgetTable();
-  location.reload();
+
+
+
+// 4️⃣ Page Initialization (Keep existing document ready functions)
+document.addEventListener("DOMContentLoaded", async function () {
+  await fetchPokemonData(); // ✅ Ensure Pokémon load first
+  setTimeout(removeDraftedFromBoard, 500); // ✅ Wait before removing drafted Pokémon
+});
+
+
+
+async function resetDraft() {
+  console.log("🔄 Resetting draft...");
+
+  try {
+      // 🚨 1️⃣ Remove All Draft Data from Firebase
+      await remove(ref(db, "drafted"));
+      console.log("✅ Firebase draft data cleared!");
+
+      // 🚨 2️⃣ Reset Budget Table
+      updateBudgetTable(); 
+
+      // 🚨 3️⃣ Reload Pokémon to the Draft Board
+      await fetchPokemonData();
+      console.log("✅ Pokémon draft board restored!");
+
+      // 🚨 4️⃣ Clear "Current Team" Icons for All Players
+      let table = document.getElementById("budget-table");
+      if (table) {
+          table.querySelectorAll("tbody tr").forEach(row => {
+              let teamCell = row.cells[3]; // Column index for "Current Team"
+              if (teamCell) {
+                  teamCell.innerHTML = "";
+              }
+          });
+          console.log("✅ Current Team icons cleared.");
+      } else {
+          console.error("❌ Budget table not found!");
+      }
+
+      alert("Draft has been reset successfully!");
+
+  } catch (error) {
+      console.error("❌ Error resetting draft:", error);
+      alert("An error occurred while resetting the draft.");
+  }
 }
+
 // The following setTimeout call is now redundant since removal is handled after fetch completion.
 // setTimeout(removeDraftedFromBoard, 100);
 
-// Add reset button to clear drafts
-const resetButton = document.createElement("button");
-resetButton.textContent = "Reset Draft";
-resetButton.classList.add("btn", "btn-danger", "mt-3", "w-100");
-resetButton.addEventListener("click", resetDraft);
-document.body.appendChild(resetButton);
+document.getElementById("resetDraftBtn").addEventListener("click", resetDraft);
+
