@@ -281,4 +281,32 @@ table.team-table td.placeholder {
 #draftModal .btn-secondary:hover {
     background-color: rgba(255, 255, 255, 0.4);
 }
+/* 🎨 Ensure Pokémon Icons Appear in a Row */
+#budget-table td {
+    white-space: nowrap; /* Prevents line breaks */
+}
+/* 🎨 Ensure Pokémon Icons Stay in a Single Row */
+.team-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* 🔹 Reduce space between icons */
+    white-space: nowrap; /* 🔹 Prevents wrapping */
+    min-height: 40px; /* 🔹 Ensures consistent row height */
+}
+
+/* 🎨 Pokémon Icon Styling */
+.team-icon {
+    width: 12%;
+    height: 12%;
+    object-fit: contain;
+}
+
+/* 🎯 Undo Button Styling */
+.undo-btn {
+    padding: 4px 8px;
+    font-size: 14px;
+    white-space: nowrap; /* 🔹 Prevents resizing */
+}
+
+
 

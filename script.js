@@ -108,6 +108,101 @@ function toPascalCase(str) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
 }
+function restorePokemonToDraftBoard(pokemonName) {
+    // 🎯 Get the tier container
+    const tiersDiv = document.getElementById("tiers");
+
+    // 🎯 Find the Pokémon's tier
+    let points = pokemonPoints[pokemonName];
+
+    if (points === undefined) {
+        console.warn(`Pokemon ${pokemonName} not found in points list.`);
+        return;
+    }
+
+    // 🎯 Find the correct tier section
+    let tierSection = document.getElementById(`tier-${points}`);
+
+    if (!tierSection) {
+        console.warn(`Tier ${points} not found for ${pokemonName}.`);
+        return;
+    }
+
+    // 🎯 Fetch Pokémon details again to re-add to the draft board
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+        .then(response => response.json())
+        .then(data => {
+            let sprite = data.sprites.versions["generation-v"]["black-white"].animated.front_default;
+            if (!sprite) return; // Exit if no sprite found
+
+            // 🎯 Generate correct PokeMMO Wiki link
+            let formattedName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
+            let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
+
+            // 🎯 Handle special cases like Rotom forms
+            if (["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"].includes(pokemonName)) {
+                wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
+            }
+
+            // 🎯 Create new Pokémon card
+            let pokeDiv = document.createElement("div");
+            pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
+
+            pokeDiv.innerHTML = `
+                <a href="${wikiUrl}" target="_blank" class="pokemon-link">
+                    <img src="${sprite}" class="pokemon-gif" alt="${pokemonName}">
+                </a>
+                <p class="pokemon-name">${pokemonName.toUpperCase()} (${points} Pts)</p>
+                <button class="draft-btn btn btn-sm" data-name="${pokemonName}">Draft</button>
+                <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
+            `;
+
+            // 🎯 Add back to the tier section
+            tierSection.appendChild(pokeDiv);
+        })
+        .catch(error => console.error("Error restoring Pokémon:", error));
+}
+
+
+function undoLastDraftForPlayer(player) {
+    let draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+    
+    // 🔹 Find the last Pokémon drafted by this player
+    let lastIndex = draftedPokemons.map(p => p.player).lastIndexOf(player);
+    
+    if (lastIndex === -1) {
+        alert(`${player} has no drafts to undo!`);
+        return;
+    }
+
+    let removedPokemon = draftedPokemons.splice(lastIndex, 1)[0]; // Remove last Pokémon for this player
+    localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
+
+    alert(`Removed ${removedPokemon.pokemon} from ${player}'s team.`);
+
+    // 🎯 Step 1: Restore Pokémon to the draft board
+    restorePokemonToDraftBoard(removedPokemon.pokemon);
+
+    // 🎯 Step 2: Update UI elements
+    updateBudgetTable();
+    removeDraftedFromBoard();
+}
+
+// 🔹 Attach event listeners to all undo buttons
+document.querySelectorAll(".undo-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let player = this.getAttribute("data-player");
+        undoLastDraftForPlayer(player);
+    });
+});
+
+// 🔹 Attach event listeners to all undo buttons
+document.querySelectorAll(".undo-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let player = this.getAttribute("data-player");
+        undoLastDraftForPlayer(player);
+    });
+});
 
 async function fetchPokemonData() {
   try {
@@ -235,25 +330,51 @@ function removeDraftedFromBoard() {
       }
     });
   }
-  function updateBudgetTable() {
+  async function updateBudgetTable() {
     const players = ["Andres", "Dylan", "Ethan", "Tyler"];
-    const totalBudget = 13; // Each player has 15 points max
-    const draftedPokemons =
-      JSON.parse(localStorage.getItem("draftedPokemons")) || [];
-  
-    players.forEach((player) => {
-      let usedPoints = draftedPokemons
-        .filter((entry) => entry.player === player)
-        .reduce((sum, entry) => sum + Number(entry.points), 0); // Calculate total points used
-  
-      let remainingBudget = totalBudget - usedPoints; // Calculate remaining budget
-  
-      // Update the HTML table with new values
-      document.getElementById(`budget-${player}-used`).textContent = usedPoints;
-      document.getElementById(`budget-${player}-remaining`).textContent =
-        remainingBudget;
-    });
-  }
+    const totalBudget = 13;
+    const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+
+    for (const player of players) {
+        let usedPoints = draftedPokemons
+            .filter(entry => entry.player === player)
+            .reduce((sum, entry) => sum + Number(entry.points), 0);
+        let remainingBudget = totalBudget - usedPoints;
+
+        document.getElementById(`budget-${player}-used`).textContent = usedPoints;
+        document.getElementById(`budget-${player}-remaining`).textContent = remainingBudget;
+
+        // 🎯 Update the Current Team Icons
+        const teamIconsContainer = document.getElementById(`team-${player}-icons`);
+        teamIconsContainer.innerHTML = ""; // Clear existing icons
+        teamIconsContainer.classList.add("team-icons"); // ✅ Apply flex styling
+        
+        teamIconsContainer.innerHTML = ""; // Clear existing icons
+
+        for (const entry of draftedPokemons.filter(p => p.player === player)) {
+            const iconUrl = await fetchPokemonIcon(entry.pokemon);
+            if (iconUrl) {
+                let img = document.createElement("img");
+                img.src = iconUrl;
+                img.classList.add("team-icon");
+                teamIconsContainer.appendChild(img);
+            }
+        }
+    }
+}
+async function fetchPokemonIcon(pokemonName) {
+    try {
+        let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+        if (!response.ok) throw new Error("Failed to fetch Pokémon data");
+
+        let data = await response.json();
+        return data.sprites.versions["generation-viii"].icons.front_default;
+    } catch (error) {
+        console.error(`Error fetching icon for ${pokemonName}:`, error);
+        return null;
+    }
+}
+
   
 document.addEventListener("DOMContentLoaded", function () {
   // Modified to wait for fetchPokemonData to complete before removing drafted Pokémon
@@ -319,7 +440,8 @@ document.getElementById("confirmDraft").addEventListener("click", function () {
 
         window.dispatchEvent(new Event("draftUpdated"));
         removeDraftedFromBoard();
-        updateBudgetTable();
+        updateBudgetTable(); // ✅ Ensures icons update live
+        
 
         draftModal.hide(); // Close modal after selection
     } else {

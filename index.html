@@ -55,41 +55,49 @@
     </nav>
     <div class="container py-4">
       <h1 class="text-center mb-4">Pokémon Draft Tier List</h1>
-      <table
-        id="budget-table"
-        class="table-dark table-bordered table-striped text-center mt-3"
-      >
+      <table id="budget-table" class="table-dark table-bordered table-striped text-center mt-3">
         <thead class="table-dark">
-          <tr class="table-dark">
-            <th>Player</th>
-            <th>Points Used</th>
-            <th>Remaining Budget</th>
-          </tr>
+            <tr>
+                <th>Player</th>
+                <th>Points Used</th>
+                <th>Remaining Budget</th>
+                <th>Current Team</th> <!-- ✅ Icons only -->
+                <th>Undo</th> <!-- ✅ Undo button in a separate column -->
+            </tr>
         </thead>
         <tbody>
-          <tr class="table-dark">
-            <td>Andres</td>
-            <td id="budget-Andres-used">0</td>
-            <td id="budget-Andres-remaining">15</td>
-          </tr>
-          <tr class="table-dark">
-            <td>Dylan</td>
-            <td id="budget-Dylan-used">0</td>
-            <td id="budget-Dylan-remaining">15</td>
-          </tr>
-          <tr class="table-dark">
-            <td>Ethan</td>
-            <td id="budget-Ethan-used">0</td>
-            <td id="budget-Ethan-remaining">15</td>
-          </tr>
-          <tr class="table-dark">
-            <td>Tyler</td>
-            <td id="budget-Tyler-used">0</td>
-            <td id="budget-Tyler-remaining">15</td>
-          </tr>
+            <tr>
+                <td>Andres</td>
+                <td id="budget-Andres-used">0</td>
+                <td id="budget-Andres-remaining">15</td>
+                <td id="team-Andres-icons" class="team-icons"></td> <!-- ✅ Icons go here -->
+                <td><button class="btn btn-danger undo-btn" data-player="Andres">Undo</button></td> <!-- ✅ Undo button in its own cell -->
+            </tr>
+            <tr>
+                <td>Dylan</td>
+                <td id="budget-Dylan-used">0</td>
+                <td id="budget-Dylan-remaining">15</td>
+                <td id="team-Dylan-icons" class="team-icons"></td>
+                <td><button class="btn btn-danger undo-btn" data-player="Dylan">Undo</button></td>
+            </tr>
+            <tr>
+                <td>Ethan</td>
+                <td id="budget-Ethan-used">0</td>
+                <td id="budget-Ethan-remaining">15</td>
+                <td id="team-Ethan-icons" class="team-icons"></td>
+                <td><button class="btn btn-danger undo-btn" data-player="Ethan">Undo</button></td>
+            </tr>
+            <tr>
+                <td>Tyler</td>
+                <td id="budget-Tyler-used">0</td>
+                <td id="budget-Tyler-remaining">15</td>
+                <td id="team-Tyler-icons" class="team-icons"></td>
+                <td><button class="btn btn-danger undo-btn" data-player="Tyler">Undo</button></td>
+            </tr>
         </tbody>
-      </table>
-
+    </table>
+    
+    
       <div id="tiers" class="row"></div>
     </div>
 <!-- 🎯 Draft Modal (Hidden by Default) -->
