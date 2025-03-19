@@ -102,6 +102,11 @@ const pokemonPoints = {
   "rotom-frost": 1,
 };
 
+let countdown; // Stores the countdown interval
+let timeLeft = 5 * 60; // 5 minutes in seconds
+let isTimerRunning = false; // Tracks if the timer is active
+let isTimerPaused = false; // Tracks if the timer is paused
+
 function toPascalCase(str) {
   return str
     .split("-")
@@ -162,8 +167,63 @@ function restorePokemonToDraftBoard(pokemonName) {
         })
         .catch(error => console.error("Error restoring Pokémon:", error));
 }
+function toggleDraftTimer() {
+    const timerElement = document.getElementById("draft-timer");
 
+    // 🔄 If the timer is paused, reset it
+    if (isTimerPaused) {
+        resetTimer();
+        return;
+    }
 
+    // 🛑 If the timer is running, pause it
+    if (isTimerRunning) {
+        clearInterval(countdown);
+        isTimerRunning = false;
+        isTimerPaused = true;
+        timerElement.textContent += " (Paused)";
+        return;
+    }
+
+    // 🆕 If not running or paused, start a new timer
+    resetTimer();
+    startTimer();
+}
+
+// 🏁 Starts the countdown
+function startTimer() {
+    const timerElement = document.getElementById("draft-timer");
+    isTimerRunning = true;
+    isTimerPaused = false;
+
+    function updateTimerDisplay() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        timerElement.textContent = `Draft Timer: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    updateTimerDisplay(); // Show initial time
+
+    countdown = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerElement.textContent = "Pokémon Draft Tier List"; // Reset title
+            isTimerRunning = false;
+        } else {
+            timeLeft--;
+            updateTimerDisplay();
+        }
+    }, 1000);
+}
+
+// 🔄 Resets the timer
+function resetTimer() {
+    clearInterval(countdown);
+    timeLeft = 5 * 60; // Reset to 5 minutes
+    isTimerRunning = false;
+    isTimerPaused = false;
+    document.getElementById("draft-timer").textContent = "Pokémon Draft Tier List";
+}
 function undoLastDraftForPlayer(player) {
     let draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
     
@@ -187,6 +247,9 @@ function undoLastDraftForPlayer(player) {
     updateBudgetTable();
     removeDraftedFromBoard();
 }
+
+// 🔹 Attach event listener to the H1 title
+document.getElementById("draft-timer").addEventListener("click", toggleDraftTimer);
 
 // 🔹 Attach event listeners to all undo buttons
 document.querySelectorAll(".undo-btn").forEach(button => {

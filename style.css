@@ -1,9 +1,11 @@
 /* Import Custom Font */
+/* 🎨 Import PokémonDP Font */
 @font-face {
     font-family: 'PokemonDP';
     src: url('pokemon-dp-pro.ttf') format('truetype');
     font-display: swap;
 }
+
 .container{
     max-width: 83%;
 }
@@ -17,7 +19,7 @@
     text-align: center;
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.6);
     color: white;
-    max-width: 180px; /* Increased card size */
+    max-width: 200px; /* Increased card size */
     display: inline-block;
     margin: 16px;
     overflow: hidden; /* Prevents content overflow */
@@ -74,17 +76,55 @@
     flex-wrap: wrap;
     gap: 12px;
     justify-content: center;
-    align-items: center;
+    align-items: inherit;
 }
 
 /* General Body Styling */
+/* 🎨 Apply PokémonDP Font to Everything */
 body {
+    font-family: 'PokemonDP', sans-serif !important;
     background: url('https://media.pocketmonsters.net/pages/51/Distort.jpg') no-repeat center center fixed;
     background-size: cover;
     color: white;
-    font-family: 'Poppins', sans-serif;
     text-shadow: 1px 1px 4px black;
 }
+
+/* 🎯 Navbar Styling */
+.navbar, .navbar-brand, .nav-link {
+    font-family: 'PokemonDP', sans-serif !important;
+    font-size: 2rem;
+}
+
+/* 🎯 Headings (H1, H2, etc.) */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'PokemonDP', sans-serif !important;
+}
+h1{
+    font-size: 4rem !important;
+}
+
+
+/* 🎯 Buttons */
+button, .btn {
+    font-family: 'PokemonDP', sans-serif !important;
+    font-size: 28px;
+}
+
+/* 🎯 Tables */
+table {
+    font-family: 'PokemonDP', sans-serif !important;
+}
+
+/* 🎯 Modals */
+.modal-content, .modal-title, .modal-body, .modal-footer {
+    font-family: 'PokemonDP', sans-serif !important;
+}
+
+/* 🎯 Dropdowns */
+select {
+    font-family: 'PokemonDP', sans-serif !important;
+}
+
 
 /* Navbar */
 .navbar {
@@ -110,6 +150,7 @@ h1 {
     font-family: 'Press Start 2P', cursive;
     color: #ffd700;
     text-shadow: 2px 2px 6px black;
+    font-size: 24px;
 }
 
 /* General Pokémon Display */
@@ -118,6 +159,7 @@ h1 {
     margin: 12px;
     text-align: center;
 }
+
 
 /* Image Styling */
 img {
@@ -187,9 +229,11 @@ table.team-table td.placeholder {
 
 #budget-table th, #budget-table td {
     border: 2px solid #ffd700;
-    padding: 12px;
+    padding: 10px;
     font-size: 18px;
     text-shadow: 1px 1px 4px black;
+    width: min-content;
+    font-size: 2rem;
 }
 
 #budget-table thead {
@@ -304,7 +348,7 @@ table.team-table td.placeholder {
 /* 🎯 Undo Button Styling */
 .undo-btn {
     padding: 4px 8px;
-    font-size: 14px;
+    font-size: 24px;
     white-space: nowrap; /* 🔹 Prevents resizing */
 }
 
