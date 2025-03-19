@@ -247,26 +247,6 @@ function undoLastDraftForPlayer(player) {
     updateBudgetTable();
     removeDraftedFromBoard();
 }
-
-// 🔹 Attach event listener to the H1 title
-document.getElementById("draft-timer").addEventListener("click", toggleDraftTimer);
-
-// 🔹 Attach event listeners to all undo buttons
-document.querySelectorAll(".undo-btn").forEach(button => {
-    button.addEventListener("click", function () {
-        let player = this.getAttribute("data-player");
-        undoLastDraftForPlayer(player);
-    });
-});
-
-// 🔹 Attach event listeners to all undo buttons
-document.querySelectorAll(".undo-btn").forEach(button => {
-    button.addEventListener("click", function () {
-        let player = this.getAttribute("data-player");
-        undoLastDraftForPlayer(player);
-    });
-});
-
 async function fetchPokemonData() {
   try {
     const response = await fetch("https://pokeapi.co/api/v2/pokedex/6");
@@ -381,6 +361,35 @@ async function fetchPokemonData() {
     console.error("Error in fetchPokemonData:", error);
   }
 }
+async function updateBudgetTable() {
+  const players = ["Andres", "Dylan", "Ethan", "Tyler"];
+  const totalBudget = 13;
+  const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
+
+  for (const player of players) {
+      let usedPoints = draftedPokemons
+          .filter(entry => entry.player === player)
+          .reduce((sum, entry) => sum + Number(entry.points), 0);
+      let remainingBudget = totalBudget - usedPoints;
+
+      document.getElementById(`budget-${player}-used`).textContent = usedPoints;
+      document.getElementById(`budget-${player}-remaining`).textContent = remainingBudget;
+
+      // 🎯 Update the Current Team Icons
+      const teamIconsContainer = document.getElementById(`team-${player}-icons`);
+      teamIconsContainer.innerHTML = ""; // Clear existing icons
+
+      for (const entry of draftedPokemons.filter(p => p.player === player)) {
+          const iconUrl = await fetchPokemonIcon(entry.pokemon);
+          if (iconUrl) {
+              let img = document.createElement("img");
+              img.src = iconUrl;
+              img.classList.add("team-icon");
+              teamIconsContainer.appendChild(img);
+          }
+      }
+  }
+}
 function removeDraftedFromBoard() {
     const draftedPokemons =
       JSON.parse(localStorage.getItem("draftedPokemons")) || [];
@@ -393,38 +402,8 @@ function removeDraftedFromBoard() {
       }
     });
   }
-  async function updateBudgetTable() {
-    const players = ["Andres", "Dylan", "Ethan", "Tyler"];
-    const totalBudget = 13;
-    const draftedPokemons = JSON.parse(localStorage.getItem("draftedPokemons")) || [];
 
-    for (const player of players) {
-        let usedPoints = draftedPokemons
-            .filter(entry => entry.player === player)
-            .reduce((sum, entry) => sum + Number(entry.points), 0);
-        let remainingBudget = totalBudget - usedPoints;
 
-        document.getElementById(`budget-${player}-used`).textContent = usedPoints;
-        document.getElementById(`budget-${player}-remaining`).textContent = remainingBudget;
-
-        // 🎯 Update the Current Team Icons
-        const teamIconsContainer = document.getElementById(`team-${player}-icons`);
-        teamIconsContainer.innerHTML = ""; // Clear existing icons
-        teamIconsContainer.classList.add("team-icons"); // ✅ Apply flex styling
-        
-        teamIconsContainer.innerHTML = ""; // Clear existing icons
-
-        for (const entry of draftedPokemons.filter(p => p.player === player)) {
-            const iconUrl = await fetchPokemonIcon(entry.pokemon);
-            if (iconUrl) {
-                let img = document.createElement("img");
-                img.src = iconUrl;
-                img.classList.add("team-icon");
-                teamIconsContainer.appendChild(img);
-            }
-        }
-    }
-}
 async function fetchPokemonIcon(pokemonName) {
     try {
         let response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
@@ -437,6 +416,27 @@ async function fetchPokemonIcon(pokemonName) {
         return null;
     }
 }
+
+// 🔹 Attach event listener to the H1 title
+document.getElementById("draft-timer").addEventListener("click", toggleDraftTimer);
+
+// 🔹 Attach event listeners to all undo buttons
+document.querySelectorAll(".undo-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let player = this.getAttribute("data-player");
+        undoLastDraftForPlayer(player);
+    });
+});
+
+// 🔹 Attach event listeners to all undo buttons
+document.querySelectorAll(".undo-btn").forEach(button => {
+    button.addEventListener("click", function () {
+        let player = this.getAttribute("data-player");
+        undoLastDraftForPlayer(player);
+    });
+});
+
+
 
   
 document.addEventListener("DOMContentLoaded", function () {

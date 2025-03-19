@@ -339,18 +339,27 @@ table.team-table td.placeholder {
 }
 
 /* 🎨 Pokémon Icon Styling */
+/* 🎨 Ensure Pokémon Icons Are Uniform in Size & Displayed Properly */
+/* 🎨 Ensure Pokémon Icons Stay the Same Size */
+/* 🎨 Fix Pokémon Icon Shrinking */
 .team-icon {
-    width: 12%;
-    height: 12%;
+    width: 54px !important;  /* ✅ Force exact width */
+    height: 52px  !important; /* ✅ Force exact height */
     object-fit: contain;
+    flex-shrink: 0 !important; /* ✅ Prevent shrinking */
+    max-width: unset !important; /* ✅ Remove Bootstrap override */
+}
+.team-icons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap; /* Prevents wrapping */
+    min-height: 40px; /* Ensures row height remains constant */
+    overflow: visible; /* ✅ Prevents flexbox compression */
 }
 
-/* 🎯 Undo Button Styling */
-.undo-btn {
-    padding: 4px 8px;
-    font-size: 24px;
-    white-space: nowrap; /* 🔹 Prevents resizing */
-}
+
+
 
 
 
