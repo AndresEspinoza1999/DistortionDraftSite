@@ -558,20 +558,25 @@ document.querySelectorAll(".undo-btn").forEach((button) => {
 });
 
 // 🔥 Listen for real-time updates from Firebase and update UI
+// 🔥 Listen for real-time updates from Firebase and update UI instantly
 onValue(ref(db, "drafted"), async (snapshot) => {
-  console.log("Firebase draft data updated!");
+  console.log("🔥 Firebase draft data updated!");
 
   let draftedPokemons = [];
   if (snapshot.exists()) {
       draftedPokemons = Object.values(snapshot.val());
   }
 
+  // 🎯 Store in localStorage for session persistence
   localStorage.setItem("draftedPokemons", JSON.stringify(draftedPokemons));
 
-  // 🎯 Rebuild the board after every draft change
-  await fetchPokemonData();
+  // 🛑 Ensure no duplicate drafts appear
   removeDraftedFromBoard();
+
+  // ✅ Refresh the budget table and UI in real-time
+  await updateBudgetTable();
 });
+
 
 
 
