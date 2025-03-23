@@ -116,6 +116,7 @@ const pokemonPoints = {
   mamoswine: 3,
   gallade: 2,
   probopass: 1,
+  "porygon-z": 2,
   dusknoir: 2,
   froslass: 2,
  "rotom": 1,
