@@ -31,14 +31,14 @@ console.log("🔥 Firebase Initialized!");
 
 const pokemonPoints = {
   raichu: 1,
-  clefable: 3,
+  clefable: 2,
   golduck: 1,
   alakazam: 2,
-  machamp: 3,
+  machamp: 2,
   tentacruel: 2,
   golem: 1,
   rapidash: 1,
-  gengar: 3,
+  gengar: 2,
   seaking: 1,
   scyther: 0,
   gyarados: 3,
