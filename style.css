@@ -23,6 +23,7 @@
     display: inline-block;
     margin: 16px;
     overflow: hidden; /* Prevents content overflow */
+    min-width: 150px;
 }
 
 /* Pokémon Images */
@@ -77,6 +78,8 @@
     gap: 12px;
     justify-content: center;
     align-items: inherit;
+    overflow-x: auto;
+  white-space: nowrap;
 }
 
 /* General Body Styling */
@@ -358,7 +361,36 @@ table.team-table td.placeholder {
     overflow: visible; /* ✅ Prevents flexbox compression */
 }
 
+.pokemon-header {
+    margin-bottom: 8px; /* optional spacing from image */
+}
 
+.pokemon-name {
+    font-size: 20px;
+    margin: 0; /* ✅ Remove vertical space */
+    font-weight: bold;
+    display: block;
+    text-transform: capitalize;
+    line-height: 1.2; /* ✅ tighter line height */
+}
+
+.pokemon-types {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px; /* ✅ smaller gap above types */
+    margin-bottom: 0; /* ✅ eliminate bottom gap if unneeded */
+    flex-wrap: wrap;
+}
+
+.pokemon-types img.type-icon {
+    width: 54px;
+    height: 48px;
+    object-fit: contain;
+    padding-left: 0px; /* ✅ remove indent if not needed */
+}
+
+  
 
 
 
