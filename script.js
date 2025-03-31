@@ -31,14 +31,14 @@ console.log("🔥 Firebase Initialized!");
 
 const pokemonPoints = {
   raichu: 1,
-  clefable: 2,
+  clefable: 3,
   golduck: 1,
   alakazam: 2,
-  machamp: 2,
+  machamp: 3,
   tentacruel: 2,
   golem: 1,
   rapidash: 1,
-  gengar: 2,
+  gengar: 3,
   seaking: 1,
   scyther: 0,
   gyarados: 3,
@@ -75,7 +75,7 @@ const pokemonPoints = {
   absol: 1,
   glalie: 1,
   torterra: 1,
-  infernape: 4,
+  infernape: 44,
   empoleon: 3,
   staraptor: 2,
   bibarel: 0,
@@ -139,73 +139,118 @@ let timeLeft = 5 * 60; // 5 minutes in seconds
 let isTimerRunning = false; // Tracks if the timer is active
 let isTimerPaused = false; // Tracks if the timer is paused
 
+// ✨ Updated: getPokeMMOLink now handles both Porygon-Z and Rotom forms.
+function getPokeMMOLink(pokemon) {
+  const baseUrl = "https://pokemmo.shoutwiki.com/wiki/";
+  const nameLower = pokemon.name.toLowerCase();
+
+  // Special case for Porygon-Z
+  if (nameLower === "porygon-z") {
+    return baseUrl + "Porygon-Z";
+  }
+  
+  // Special case for Rotom forms
+  if (["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"].includes(nameLower)) {
+    return baseUrl + "Rotom#" + toPascalCase(pokemon.name);
+  }
+  
+  // Default conversion: Capitalize the first letter
+  const formattedName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+  return baseUrl + formattedName;
+}
+
+// ✨ Updated: getPokemonTypes now expects an object with a name and an array of type names.
+function getPokemonTypes(pokemon) {
+  const nameLower = pokemon.name.toLowerCase();
+  
+  // Check for Rotom and its forms
+  if (nameLower.startsWith("rotom")) {
+    switch(nameLower) {
+      case "rotom":
+        return ["electric", "ghost"];
+      case "rotom-heat":
+        return ["electric", "fire"];
+      case "rotom-wash":
+        return ["electric", "water"];
+      case "rotom-mow":
+        return ["electric", "grass"];
+      case "rotom-fan":
+        return ["electric", "flying"];
+      case "rotom-frost":
+        return ["electric", "ice"];
+      default:
+        return pokemon.types; // Fallback if not matched
+    }
+  }
+  return pokemon.types;
+}
+
 function toPascalCase(str) {
   return str
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
 }
+
 function restorePokemonToDraftBoard(pokemonName) {
-    const tiersDiv = document.getElementById("tiers");
-    let points = pokemonPoints[pokemonName];
-    if (points === undefined) {
-      console.warn(`Pokemon ${pokemonName} not found in points list.`);
-      return;
-    }
-  
-    let tierSection = document.getElementById(`tier-${points}`);
-    if (!tierSection) {
-      console.warn(`Tier ${points} not found for ${pokemonName}.`);
-      return;
-    }
-  
-    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
-      .then((response) => response.json())
-      .then((data) => {
-        const frontSprite = data.sprites.versions["generation-v"]["black-white"].animated.front_default;
-        const backSprite = data.sprites.versions["generation-v"]["black-white"].animated.back_default;
-        if (!frontSprite || !backSprite) return;
-  
-        let formattedName = pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1);
-        let wikiUrl = `https://pokemmo.shoutwiki.com/wiki/${formattedName}`;
-        if (["rotom-heat", "rotom-wash", "rotom-mow", "rotom-fan", "rotom-frost"].includes(pokemonName)) {
-          wikiUrl = `https://pokemmo.shoutwiki.com/wiki/Rotom#${formattedName}`;
-        }
-  
-        // ✅ Gen V Typing Logic
-        let types = (data.past_types && data.past_types.length > 0)
-          ? data.past_types[0].types
-          : data.types;
-  
-        console.log(`🧬 [restore] ${pokemonName} typing source:`, types.map(t => t.type.name));
-  
-        let typesHTML = '<div class="pokemon-types">';
-        types.forEach((typeObj) => {
-          let typeName = typeObj.type.name;
-          typesHTML += `<img src="Type Labels/${typeName}.png" alt="${typeName}" class="type-icon">`;
-        });
-        typesHTML += "</div>";
-  
-        // ✅ Create Card
-        let pokeDiv = document.createElement("div");
-        pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
-        pokeDiv.innerHTML = `
+  const tiersDiv = document.getElementById("tiers");
+  let points = pokemonPoints[pokemonName];
+  if (points === undefined) {
+    console.warn(`Pokemon ${pokemonName} not found in points list.`);
+    return;
+  }
+
+  let tierSection = document.getElementById(`tier-${points}`);
+  if (!tierSection) {
+    console.warn(`Tier ${points} not found for ${pokemonName}.`);
+    return;
+  }
+
+  fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+    .then((response) => response.json())
+    .then((data) => {
+      const frontSprite = data.sprites.versions["generation-v"]["black-white"].animated.front_default;
+      const backSprite = data.sprites.versions["generation-v"]["black-white"].animated.back_default;
+      if (!frontSprite || !backSprite) return;
+
+      // Use getPokeMMOLink helper for the wiki URL
+      let wikiUrl = getPokeMMOLink({ name: pokemonName });
+
+      // ✨ Updated: Use getPokemonTypes to fix typing for Rotom forms.
+      let baseTypes = (data.past_types && data.past_types.length > 0)
+        ? data.past_types[0].types.map(t => t.type.name)
+        : data.types.map(t => t.type.name);
+
+      let correctedTypes = getPokemonTypes({ name: pokemonName, types: baseTypes });
+
+      console.log(`🧬 [restore] ${pokemonName} typing source:`, correctedTypes);
+      
+      let typesHTML = '<div class="pokemon-types">';
+      correctedTypes.forEach((typeName) => {
+        typesHTML += `<img src="Type Labels/${typeName}.png" alt="${typeName}" class="type-icon">`;
+      });
+      typesHTML += "</div>";
+
+      // ✨ Create Card with the corrected wikiUrl and typesHTML
+      let pokeDiv = document.createElement("div");
+      pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
+      pokeDiv.innerHTML = `
           <img src="${frontSprite}" class="pokemon-gif" alt="${pokemonName}" data-front="${frontSprite}" data-back="${backSprite}">
           <p class="pokemon-name">${pokemonName.toUpperCase()} (${pokemonPoints[pokemonName]} Pts)</p>
           ${typesHTML}
           <button class="draft-btn btn btn-sm" data-name="${pokemonName}">Draft</button>
           <a href="${wikiUrl}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
         `;
-  
-        pokeDiv.querySelector(".pokemon-gif").addEventListener("click", function () {
-          this.src = this.src === this.dataset.front ? this.dataset.back : this.dataset.front;
-        });
-  
-        tierSection.appendChild(pokeDiv);
-      })
-      .catch((error) => console.error("Error restoring Pokémon:", error));
-  }
-  
+
+      pokeDiv.querySelector(".pokemon-gif").addEventListener("click", function () {
+        this.src = this.src === this.dataset.front ? this.dataset.back : this.dataset.front;
+      });
+
+      tierSection.appendChild(pokeDiv);
+    })
+    .catch((error) => console.error("Error restoring Pokémon:", error));
+}
+
 function toggleDraftTimer() {
   const timerElement = document.getElementById("draft-timer");
 
@@ -224,6 +269,7 @@ function toggleDraftTimer() {
 
   startTimer(); // ⏳ Start the timer if it's not running
 }
+
 // 🏁 Starts the countdown
 function startTimer() {
   const timerElement = document.getElementById("draft-timer");
@@ -373,16 +419,15 @@ async function fetchPokemonData() {
     await Promise.all(
       pokemonEntries.map(async (name) => {
         if (!(name in pokemonPoints)) {
-            console.warn(`⚠ Skipping ${name} (no point value found)`);
-            return;
-          }
+          console.warn(`⚠ Skipping ${name} (no point value found)`);
+          return;
+        }
           
-          if (draftedPokemons.includes(name)) {
-            console.warn(`⚠ Skipping ${name} (already drafted)`);
-            return;
-          }
+        if (draftedPokemons.includes(name)) {
+          console.warn(`⚠ Skipping ${name} (already drafted)`);
+          return;
+        }
           
-
         // 🎯 Correct Rotom Form Names for API Fetching
         let formattedName = name;
         const rotomForms = {
@@ -453,38 +498,39 @@ async function fetchPokemonData() {
 
         console.log(`✅ Creating Pokémon card for ${formattedName}`);
 
-        // 🎯 Create Pokémon Card
-      // 🎯 Build the types container using past_types (Gen V) if available
-      let types =
-      pokemonData.past_types && pokemonData.past_types.length > 0
-        ? pokemonData.past_types[0].types
-        : pokemonData.types;
+        // ✨ Updated: Build types using getPokemonTypes.
+        let baseTypes = pokemonData.past_types && pokemonData.past_types.length > 0
+          ? pokemonData.past_types[0].types.map(t => t.type.name)
+          : pokemonData.types.map(t => t.type.name);
     
-    console.log(
-      `${pokemonData.name} typing source: ${
-        pokemonData.past_types.length > 0 ? "past_types (Gen V)" : "types (Current)"
-      }`
-    );
+        console.log(
+          `${pokemonData.name} typing source: ${
+            pokemonData.past_types && pokemonData.past_types.length > 0 ? "past_types (Gen V)" : "types (Current)"
+          }`
+        );
     
-    
+        let correctedTypes = getPokemonTypes({ name: pokemonData.name, types: baseTypes });
+      
+        let typesHTML = '<div class="pokemon-types">';
+        correctedTypes.forEach((typeName) => {
+          typesHTML += `<img src="Type Labels/${typeName}.png" alt="${typeName}" class="type-icon">`;
+        });
+        typesHTML += "</div>";
 
-let typesHTML = '<div class="pokemon-types">';
-types.forEach((typeObj) => {
-  let typeName = typeObj.type.name;
-  typesHTML += `<img src="Type Labels/${typeName}.png" alt="${typeName}" class="type-icon">`;
+        // ✨ Use getPokeMMOLink for the PokeMMO link.
+        const pokeLink = getPokeMMOLink(pokemonData);
 
-});
-typesHTML += "</div>";
         const pokeDiv = document.createElement("div");
         pokeDiv.classList.add("pokemon-card", "text-center", "shadow-sm");
         pokeDiv.innerHTML = `
-<img src="${frontSprite}" class="pokemon-gif" alt="${name}" data-front="${frontSprite}" data-back="${backSprite}">
-    <div class="pokemon-header">
-<p class="pokemon-name">${pokemonData.name.toUpperCase()} (${pokemonPoints[pokemonData.name]} Pts)</p>
-    ${typesHTML}
-<button class="draft-btn btn btn-sm" data-name="${pokemonData.name}">Draft</button>
-<a href="https://pokemmo.shoutwiki.com/wiki/${pokemonData.name}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
-`;
+          <img src="${frontSprite}" class="pokemon-gif" alt="${name}" data-front="${frontSprite}" data-back="${backSprite}">
+          <div class="pokemon-header">
+            <p class="pokemon-name">${pokemonData.name.toUpperCase()} (${pokemonPoints[pokemonData.name]} Pts)</p>
+            ${typesHTML}
+            <button class="draft-btn btn btn-sm" data-name="${pokemonData.name}">Draft</button>
+            <a href="${pokeLink}" target="_blank" class="pokemmo-btn btn btn-sm">Visit PokeMMO</a>
+          </div>
+        `;
 
         // ✅ Click to Toggle Sprite
         pokeDiv
@@ -634,7 +680,6 @@ document.querySelectorAll(".undo-btn").forEach((button) => {
 });
 
 // 🔥 Listen for real-time updates from Firebase and update UI
-// 🔥 Listen for real-time updates from Firebase and update UI instantly
 onValue(ref(db, "drafted"), async (snapshot) => {
   console.log("🔥 Firebase draft data updated!");
 
