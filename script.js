@@ -75,7 +75,7 @@ const pokemonPoints = {
   absol: 1,
   glalie: 1,
   torterra: 1,
-  infernape: 44,
+  infernape: 4,
   empoleon: 3,
   staraptor: 2,
   bibarel: 0,
